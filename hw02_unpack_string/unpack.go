@@ -13,24 +13,26 @@ func Unpack(s string) (string, error) {
 	var b strings.Builder
 	var i int
 	var prevLetter bool
-	var r = []rune(s)
+	r := []rune(s)
 
 	switch s {
 	case "":
 		return "", nil
 	default:
 		for {
-			if unicode.IsLetter(r[i]) {
+			switch {
+			case unicode.IsLetter(r[i]):
 				b.WriteRune(r[i])
 				i++
 				prevLetter = true
-			} else if unicode.IsDigit(r[i]) && i != 0 && prevLetter {
+			case unicode.IsDigit(r[i]) && i != 0 && prevLetter:
 				n, _ := strconv.Atoi(string(r[i]))
 				str := b.String()
 				last := str[len(str)-1:]
-				if n > 0 {
+				switch {
+				case n > 0:
 					b.WriteString(strings.Repeat(last, n-1))
-				} else if n == 0 {
+				case n == 0:
 					s := b.String()
 					s = s[:len(s)-1]
 					b.Reset()
@@ -38,12 +40,12 @@ func Unpack(s string) (string, error) {
 				}
 				i++
 				prevLetter = false
-			} else if r[i] == '\\' {
+			case r[i] == '\\':
 				i++
 				b.WriteRune(r[i])
 				i++
 				prevLetter = true
-			} else {
+			default:
 				return "", ErrInvalidString
 			}
 			if i == len(s) {
