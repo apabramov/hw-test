@@ -21,7 +21,7 @@ func Unpack(s string) (string, error) {
 	default:
 		for {
 			switch {
-			case unicode.IsLetter(r[i]):
+			case unicode.IsLetter(r[i]) || r[i] == ' ':
 				b.WriteRune(r[i])
 				i++
 				prevLetter = true
@@ -48,7 +48,7 @@ func Unpack(s string) (string, error) {
 			default:
 				return "", ErrInvalidString
 			}
-			if i == len(s) {
+			if i == len([]rune(s)) {
 				break
 			}
 		}
