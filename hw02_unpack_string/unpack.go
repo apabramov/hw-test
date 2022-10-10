@@ -27,16 +27,14 @@ func Unpack(s string) (string, error) {
 				prevLetter = true
 			case unicode.IsDigit(r[i]) && i != 0 && prevLetter:
 				n, _ := strconv.Atoi(string(r[i]))
-				str := b.String()
-				last := str[len(str)-1:]
+				s := []rune(b.String())
 				switch {
 				case n > 0:
-					b.WriteString(strings.Repeat(last, n-1))
+					b.WriteString(strings.Repeat(string(s[len(s)-1:]), n-1))
 				case n == 0:
-					s := b.String()
 					s = s[:len(s)-1]
 					b.Reset()
-					b.WriteString(s)
+					b.WriteString(string(s))
 				}
 				i++
 				prevLetter = false
