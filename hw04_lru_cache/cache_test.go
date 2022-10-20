@@ -111,9 +111,10 @@ func TestRemove(t *testing.T) {
 	c.Get("a2")
 	c.Get("a3")
 
-	c.Set("a4", 100)
+	c.Set("a4", 999)
 	val, ok := c.Get("a1")
 
+	require.Equal(t, 999, val)
 	require.False(t, ok)
 	require.Nil(t, val)
 }
