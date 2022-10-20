@@ -67,7 +67,6 @@ func TestCache(t *testing.T) {
 }
 
 func TestCacheMultithreading(t *testing.T) {
-
 	c := NewCache(10)
 	wg := &sync.WaitGroup{}
 	wg.Add(2)
@@ -105,16 +104,17 @@ func TestRemove(t *testing.T) {
 	c := NewCache(3)
 	c.Set("a1", 100)
 	c.Set("a2", 100)
-	c.Set("a3", 100)
+	c.Set("a3", 999)
 
 	c.Get("a1")
 	c.Get("a2")
-	c.Get("a3")
-
-	c.Set("a4", 999)
-	val, ok := c.Get("a1")
-
+	val, ok := c.Get("a3")
+	require.True(t, ok)
 	require.Equal(t, 999, val)
+
+	c.Set("a4", 100)
+	val, ok = c.Get("a1")
+
 	require.False(t, ok)
 	require.Nil(t, val)
 }
