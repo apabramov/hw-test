@@ -30,6 +30,7 @@ func (c *lruCache) Set(key Key, value interface{}) bool {
 
 	defer c.mu.Unlock()
 	if _, ok := c.items[key]; ok {
+		delete(c.items, key)
 		c.items[key] = &ListItem{Value: value}
 		c.queue.PushFront(ch)
 		return true
@@ -58,8 +59,8 @@ func (c *lruCache) Get(key Key) (interface{}, bool) {
 }
 
 func (c *lruCache) Clear() {
-	c.queue = nil
-	c.items = nil
+	c.queue = NewList()
+	c.items = make(map[Key]*ListItem, c.capacity)
 }
 
 func NewCache(capacity int) Cache {
