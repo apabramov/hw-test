@@ -30,7 +30,7 @@ func (c *lruCache) Set(key Key, value interface{}) bool {
 
 	defer c.mu.Unlock()
 	if _, ok := c.items[key]; ok {
-		delete(c.items, key)
+		c.queue.Remove(c.items[key])
 		c.items[key] = &ListItem{Value: value}
 		c.queue.PushFront(ch)
 		return true

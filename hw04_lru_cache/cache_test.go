@@ -100,7 +100,7 @@ func TestCapacity(t *testing.T) {
 	require.Nil(t, val)
 }
 
-func TestCacheEviction(t *testing.T) {
+func TestChkValueAndCapacity(t *testing.T) {
 	c := NewCache(3)
 	c.Set("a1", 100)
 	c.Set("a2", 100)
