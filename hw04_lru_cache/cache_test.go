@@ -50,13 +50,23 @@ func TestCache(t *testing.T) {
 	})
 
 	t.Run("purge logic", func(t *testing.T) {
-		// Write me
+		c := NewCache(3)
+		c.Set("a1", 100)
+		c.Set("a2", 100)
+		c.Set("a3", 100)
+
+		c.Clear()
+		val, ok := c.Get("a1")
+		require.False(t, ok)
+		require.Nil(t, val)
+
+		val, ok = c.Get("a3")
+		require.False(t, ok)
+		require.Nil(t, val)
 	})
 }
 
 func TestCacheMultithreading(t *testing.T) {
-	t.Skip() // Remove me if task with asterisk completed.
-
 	c := NewCache(10)
 	wg := &sync.WaitGroup{}
 	wg.Add(2)
@@ -76,4 +86,35 @@ func TestCacheMultithreading(t *testing.T) {
 	}()
 
 	wg.Wait()
+}
+
+func TestSimpleEviction(t *testing.T) {
+	c := NewCache(3)
+	c.Set("a1", 100)
+	c.Set("a2", 100)
+	c.Set("a3", 100)
+	c.Set("a4", 100)
+	val, ok := c.Get("a1")
+
+	require.False(t, ok)
+	require.Nil(t, val)
+}
+
+func TestDifficultEviction(t *testing.T) {
+	c := NewCache(3)
+	c.Set("a1", 100)
+	c.Set("a2", 100)
+	c.Set("a3", 999)
+
+	c.Get("a1")
+	c.Get("a2")
+	val, ok := c.Get("a3")
+	require.True(t, ok)
+	require.Equal(t, 999, val)
+
+	c.Set("a4", 100)
+	val, ok = c.Get("a1")
+
+	require.False(t, ok)
+	require.Nil(t, val)
 }
