@@ -20,7 +20,6 @@ func doneStage(done, in In) Out {
 	out := make(Bi)
 
 	go func(in, done In) {
-
 		defer func(in, done In) {
 			close(out)
 			for range in {
