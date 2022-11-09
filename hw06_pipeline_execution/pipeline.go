@@ -11,16 +11,16 @@ type Stage func(in In) (out Out)
 func ExecutePipeline(in In, done In, stages ...Stage) Out {
 	out := in
 	for _, s := range stages {
-		out = doneStage(done, s(out))
+		out = doneStage(s(out), done)
 	}
 	return out
 }
 
-func doneStage(done, in In) Out {
+func doneStage(in In, done In) Out {
 	out := make(Bi)
 
-	go func(in, done In) {
-		defer func(in, done In) {
+	go func(in In, done In) {
+		defer func(in In, done In) {
 			close(out)
 			for range in {
 			}
