@@ -20,6 +20,7 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 	if err != nil {
 		return err
 	}
+	defer inFile.Close()
 
 	inF, err := inFile.Stat()
 	if err != nil {
@@ -34,11 +35,7 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 	if err != nil {
 		return err
 	}
-
-	defer func() {
-		inFile.Close()
-		outFile.Close()
-	}()
+	defer outFile.Close()
 
 	_, err = inFile.Seek(offset, io.SeekStart)
 	if err != nil {
