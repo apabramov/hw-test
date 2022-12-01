@@ -2,10 +2,10 @@ package main
 
 import (
 	"errors"
-	"fmt"
-	"github.com/cheggaaa/pb/v3"
 	"io"
 	"os"
+
+	"github.com/cheggaaa/pb/v3"
 )
 
 var (
@@ -15,14 +15,24 @@ var (
 
 func Copy(fromPath, toPath string, offset, limit int64) error {
 	var l int64
+
 	inFile, err := os.Open(fromPath)
 	if err != nil {
-		fmt.Println(err.Error())
+		return err
+	}
+
+	inF, err := inFile.Stat()
+	if err != nil {
+		return ErrUnsupportedFile
+	}
+
+	if offset > inF.Size() {
+		return ErrOffsetExceedsFileSize
 	}
 
 	outFile, err := os.Create(toPath)
 	if err != nil {
-		fmt.Println(err.Error())
+		return err
 	}
 
 	defer func() {
@@ -32,16 +42,11 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 
 	_, err = inFile.Seek(offset, io.SeekStart)
 	if err != nil {
-		fmt.Println(err.Error())
+		return err
 	}
 
-	f, err := inFile.Stat()
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-
-	if limit == 0 || limit > f.Size() {
-		l = f.Size()
+	if limit == 0 || limit > inF.Size() {
+		l = inF.Size()
 	} else {
 		l = limit
 	}
@@ -49,15 +54,10 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 	bar := pb.Full.Start64(l)
 	b := bar.NewProxyWriter(outFile)
 
-	_, er := io.CopyN(b, inFile, l)
-	if er != nil {
-		fmt.Println(er.Error())
+	if _, err := io.CopyN(b, inFile, l); err != nil {
+		return err
 	}
 
 	bar.Finish()
-
-	outFile.Close()
-	inFile.Close()
-
 	return nil
 }

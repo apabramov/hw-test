@@ -2,10 +2,11 @@ package main
 
 import (
 	"embed"
-	_ "embed"
-	"github.com/stretchr/testify/require"
 	"os"
+	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 type test struct {
@@ -19,15 +20,14 @@ type test struct {
 var td embed.FS
 
 func TestCopy(t *testing.T) {
-	t.Run("simple case", func(t *testing.T) {
-
+	t.Run("copy check size", func(t *testing.T) {
 		tests := []test{
 			{from: "./testdata/input.txt", cmp: "testdata/out_offset0_limit0.txt"},
 			{from: "./testdata/input.txt", limit: 10, cmp: "testdata/out_offset0_limit10.txt"},
 			{from: "./testdata/input.txt", limit: 1000, cmp: "testdata/out_offset0_limit1000.txt"},
 			{from: "./testdata/input.txt", limit: 10000, cmp: "testdata/out_offset0_limit10000.txt"},
 			{from: "./testdata/input.txt", limit: 1000, offset: 100, cmp: "testdata/out_offset100_limit1000.txt"},
-			//{from: "./testdata/input.txt", limit: 1000, offset: 6000, cmp: "testdata/out_offset6000_limit1000.txt"},
+			{from: "./testdata/input.txt", limit: 1000, offset: 6000, cmp: "testdata/out_offset6000_limit1000.txt"},
 		}
 
 		for _, tc := range tests {
@@ -39,8 +39,8 @@ func TestCopy(t *testing.T) {
 			f.Close()
 			cmp.Close()
 			os.Remove(f.Name())
-			require.Equal(t, fc.Size(), out.Size(), "OK")
+			require.Equal(t, fc.Size(), out.Size(), "Size OK")
+			require.True(t, reflect.DeepEqual(out, fc), "DeepEqual OK")
 		}
-
 	})
 }
