@@ -54,7 +54,7 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 	bar := pb.Full.Start64(l)
 	b := bar.NewProxyWriter(outFile)
 
-	if _, err := io.CopyN(b, inFile, l); err != nil && err != io.EOF {
+	if _, err := io.CopyN(b, inFile, l); err != nil && !errors.Is(err, io.EOF) {
 		return err
 	}
 
