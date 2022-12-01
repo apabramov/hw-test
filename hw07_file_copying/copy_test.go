@@ -31,16 +31,40 @@ func TestCopy(t *testing.T) {
 		}
 
 		for _, tc := range tests {
-			f, _ := os.CreateTemp("", "tmp")
-			Copy(tc.from, f.Name(), tc.offset, tc.limit)
-			out, _ := f.Stat()
-			cmp, _ := td.Open(tc.cmp)
-			fc, _ := cmp.Stat()
+			f, err := os.CreateTemp("", "tmp")
+			if err != nil {
+				t.Error(err)
+			}
+			err = Copy(tc.from, f.Name(), tc.offset, tc.limit)
+			if err != nil {
+				t.Error(err)
+			}
+			out, err := f.Stat()
+			if err != nil {
+				t.Error(err)
+			}
+			cmp, err := td.Open(tc.cmp)
+			if err != nil {
+				t.Error(err)
+			}
+			fc, err := cmp.Stat()
+			if err != nil {
+				t.Error(err)
+			}
+			b, err := os.ReadFile(f.Name())
+			if err != nil {
+				t.Error(err)
+			}
+			c, err := os.ReadFile(tc.cmp)
+			if err != nil {
+				t.Error(err)
+			}
+
 			f.Close()
 			cmp.Close()
 			os.Remove(f.Name())
-			require.Equal(t, fc.Size(), out.Size(), "Size OK")
-			require.True(t, reflect.DeepEqual(out, fc), "DeepEqual OK")
+			require.Equal(t, fc.Size(), out.Size(), "File size not equal")
+			require.True(t, reflect.DeepEqual(b, c), "DeepEqual file not equal")
 		}
 	})
 }
