@@ -1,9 +1,9 @@
 package main
 
 import (
-	"dp-git/github.com/stretchr/testify/require"
 	"embed"
 	_ "embed"
+	"github.com/stretchr/testify/require"
 	"os"
 	"testing"
 )
