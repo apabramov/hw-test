@@ -1,16 +1,15 @@
 package main
 
 import (
-	"dp-git/github.com/stretchr/testify/require"
 	"errors"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestReadDir(t *testing.T) {
-
 	t.Run("ENV set unset", func(t *testing.T) {
-
 		e, err := ReadDir("./testdata/env")
 		require.NoError(t, err)
 
