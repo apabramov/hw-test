@@ -16,10 +16,8 @@ func TestReadDir(t *testing.T) {
 		for i, v := range e {
 			if val, ok := os.LookupEnv(i); ok {
 				require.Equal(t, val, v.Value, "Env ")
-			} else {
-				if v.Value != "" {
-					require.Error(t, errors.New("Env should deleted"))
-				}
+			} else if v.Value != "" {
+				require.Error(t, errors.New("Env should deleted"))
 			}
 		}
 	})
