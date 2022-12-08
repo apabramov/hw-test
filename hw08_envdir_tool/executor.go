@@ -8,7 +8,6 @@ import (
 
 // RunCmd runs a command + arguments (cmd) with environment variables from env.
 func RunCmd(cmd []string, env Environment) (returnCode int) {
-	fmt.Println("cmd[0]", cmd[0])
 	c := exec.Command(cmd[0], cmd[1:]...)
 	for i, v := range env {
 		os.Unsetenv(i)
@@ -19,16 +18,16 @@ func RunCmd(cmd []string, env Environment) (returnCode int) {
 		}
 	}
 
-	stdin, err := c.StdinPipe()
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer stdin.Close()
-
+	//stdin, err := c.StdinPipe()
+	//if err != nil {
+	//	fmt.Println(err)
+	//}
+	//defer stdin.Close()
+	c.Stdin = os.Stdin
 	c.Stdout = os.Stdout
 	c.Stderr = os.Stderr
 
-	if err = c.Start(); err != nil {
+	if err := c.Start(); err != nil {
 		fmt.Println(err)
 	}
 
