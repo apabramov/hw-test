@@ -37,7 +37,7 @@ func ReadDir(dir string) (Environment, error) {
 			scanner.Scan()
 			str := scanner.Text()
 
-			s := bytes.Replace([]byte(str), []byte{0}, []byte{10}, -1)
+			s := bytes.ReplaceAll([]byte(str), []byte{0}, []byte{10})
 
 			val := strings.TrimRight(string(s), "\r")
 			val = strings.TrimRight(val, " ")
