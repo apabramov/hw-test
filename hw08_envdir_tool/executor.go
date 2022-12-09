@@ -11,16 +11,21 @@ func RunCmd(cmd []string, env Environment) (returnCode int) {
 	c := exec.Command(cmd[0], cmd[1:]...)
 
 	//	fmt.Println(c.String(), env)
-	c.Env = os.Environ()
 	for i, v := range env {
 		os.Unsetenv(i)
 		//fmt.Printf("%v=%v %v", i, v.Value, v.NeedRemove)
 		//fmt.Println("")
 		if !v.NeedRemove {
-			c.Env = append(c.Env, fmt.Sprintf("%s=%s", i, v.Value))
+			//c.Env = append(c.Env, fmt.Sprintf("%s=%s", i, v.Value))
+			err := os.Setenv(i, v.Value)
+			if err != nil {
+				fmt.Println(err)
+			}
 			//fmt.Println(fmt.Sprintf("%s=%s", i, v.Value))
 		}
 	}
+
+	c.Env = os.Environ()
 
 	//fmt.Println(c.Env)
 	//stdin, err := c.StdinPipe()
