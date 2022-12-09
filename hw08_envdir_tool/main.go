@@ -10,7 +10,8 @@ func main() {
 	env, err := ReadDir(fl[1])
 	if err != nil {
 		fmt.Println(err)
-		return
+		os.Exit(1)
+	} else {
+		os.Exit(RunCmd(fl[2:], env))
 	}
-	os.Exit(RunCmd(fl[2:], env))
 }
