@@ -31,24 +31,21 @@ func ReadDir(dir string) (Environment, error) {
 				return err
 			}
 			defer f.Close()
-			//r := bufio.NewReader(f)
-			//str, er := r.ReadString('\r')
+
 			scanner := bufio.NewScanner(f)
 			scanner.Split(bufio.ScanLines)
 			scanner.Scan()
 			str := scanner.Text()
-			//fmt.Println("-", str, "-")
-			s := bytes.Replace([]byte(str), []byte{0}, []byte{10}, -1)
-			//_ = s
-			//fmt.Println("env", fi.Name(), str, strings.TrimRight(string(s), "\n"))
 
-			ss := strings.TrimRight(string(s), "\r")
-			ss = strings.TrimRight(ss, " ")
-			ss = strings.TrimRight(ss, "\t")
+			s := bytes.Replace([]byte(str), []byte{0}, []byte{10}, -1)
+
+			val := strings.TrimRight(string(s), "\r")
+			val = strings.TrimRight(val, " ")
+			val = strings.TrimRight(val, "\t")
 			if str == "" {
 				e[fi.Name()] = EnvValue{Value: "", NeedRemove: true}
 			} else {
-				e[fi.Name()] = EnvValue{Value: ss, NeedRemove: false}
+				e[fi.Name()] = EnvValue{Value: val, NeedRemove: false}
 			}
 			return nil
 		}()

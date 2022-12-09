@@ -10,29 +10,17 @@ import (
 func RunCmd(cmd []string, env Environment) (returnCode int) {
 	c := exec.Command(cmd[0], cmd[1:]...)
 
-	//	fmt.Println(c.String(), env)
 	for i, v := range env {
 		os.Unsetenv(i)
-		//fmt.Printf("%v=%v %v", i, v.Value, v.NeedRemove)
-		//fmt.Println("")
 		if !v.NeedRemove {
-			//c.Env = append(c.Env, fmt.Sprintf("%s=%s", i, v.Value))
 			err := os.Setenv(i, v.Value)
 			if err != nil {
 				fmt.Println(err)
 			}
-			//fmt.Println(fmt.Sprintf("%s=%s", i, v.Value))
 		}
 	}
-
 	c.Env = os.Environ()
 
-	//fmt.Println(c.Env)
-	//stdin, err := c.StdinPipe()
-	//if err != nil {
-	//	fmt.Println(err)
-	//}
-	//defer stdin.Close()
 	c.Stdin = os.Stdin
 	c.Stdout = os.Stdout
 	c.Stderr = os.Stderr
@@ -41,7 +29,6 @@ func RunCmd(cmd []string, env Environment) (returnCode int) {
 		fmt.Println(err)
 	}
 
-	// io.WriteString(stdin, "4\n")
 	if err := c.Wait(); err != nil {
 		if exiterr, ok := err.(*exec.ExitError); ok {
 			return exiterr.ExitCode()
