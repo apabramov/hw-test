@@ -36,5 +36,5 @@ func RunCmd(cmd []string, env Environment) (returnCode int) {
 			fmt.Println(err)
 		}
 	}
-	return
+	return 0
 }
