@@ -9,7 +9,8 @@ import (
 
 // RunCmd runs a command + arguments (cmd) with environment variables from env.
 func RunCmd(cmd []string, env Environment) (returnCode int) {
-	c := exec.Command(cmd[0], cmd[1:]...)
+	com := cmd[0]
+	c := exec.Command(com, cmd[1:]...)
 
 	for i, v := range env {
 		os.Unsetenv(i)
