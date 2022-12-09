@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"os"
 	"testing"
 
@@ -15,9 +14,8 @@ func TestReadDir(t *testing.T) {
 
 		for i, v := range e {
 			if val, ok := os.LookupEnv(i); ok {
-				require.Equal(t, val, v.Value, "Env ")
-			} else if v.Value != "" {
-				require.Error(t, errors.New("Env should deleted"))
+				require.Equal(t, val, v.Value, "Env equal")
+				require.True(t, !v.NeedRemove, "Env should be unset")
 			}
 		}
 	})
