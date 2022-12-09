@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"fmt"
 	"os"
 	"path"
 	"strings"
@@ -25,10 +26,11 @@ func ReadDir(dir string) (Environment, error) {
 		return nil, err
 	}
 	for _, fi := range files {
-		err := func() error {
+		func() {
 			f, err := os.Open(path.Join(dir, fi.Name()))
 			if err != nil {
-				return err
+				fmt.Println(err)
+				return
 			}
 			defer f.Close()
 
@@ -47,11 +49,7 @@ func ReadDir(dir string) (Environment, error) {
 			} else {
 				e[fi.Name()] = EnvValue{Value: val, NeedRemove: false}
 			}
-			return nil
 		}()
-		if err != nil {
-			return nil, err
-		}
 	}
 	return e, nil
 }
