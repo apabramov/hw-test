@@ -37,14 +37,14 @@ func ReadDir(dir string) (Environment, error) {
 			scanner.Split(bufio.ScanLines)
 			scanner.Scan()
 			str := scanner.Text()
-			//fmt.Println(str)
+			//fmt.Println("-", str, "-")
 			s := bytes.Replace([]byte(str), []byte{0}, []byte{10}, -1)
 			//_ = s
 			//fmt.Println("env", fi.Name(), str, strings.TrimRight(string(s), "\n"))
 			if str == "" {
 				e[fi.Name()] = EnvValue{Value: "", NeedRemove: true}
 			} else {
-				e[fi.Name()] = EnvValue{Value: strings.TrimRight(string(s), "\r"), NeedRemove: false}
+				e[fi.Name()] = EnvValue{Value: strings.TrimRight(strings.TrimRight(string(s), "\r"), " "), NeedRemove: false}
 			}
 			return nil
 		}()
