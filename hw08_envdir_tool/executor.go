@@ -13,7 +13,7 @@ func RunCmd(cmd []string, env Environment) (returnCode int) {
 	//	fmt.Println(c.String(), env)
 	for i, v := range env {
 		os.Unsetenv(i)
-		fmt.Printf("%v=%v", i, v.Value)
+		//fmt.Printf("%v=%v", i, v.Value)
 		if !v.NeedRemove {
 			c.Env = append(os.Environ(), fmt.Sprintf("%s=%s", i, v.Value))
 			//	fmt.Printf("%s=%s", i, v.Value)
