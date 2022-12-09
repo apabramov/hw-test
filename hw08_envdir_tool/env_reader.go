@@ -41,10 +41,14 @@ func ReadDir(dir string) (Environment, error) {
 			s := bytes.Replace([]byte(str), []byte{0}, []byte{10}, -1)
 			//_ = s
 			//fmt.Println("env", fi.Name(), str, strings.TrimRight(string(s), "\n"))
+
+			ss := strings.TrimRight(string(s), "\r")
+			ss = strings.TrimRight(ss, " ")
+			ss = strings.TrimRight(ss, "\t")
 			if str == "" {
 				e[fi.Name()] = EnvValue{Value: "", NeedRemove: true}
 			} else {
-				e[fi.Name()] = EnvValue{Value: strings.TrimRight(strings.TrimRight(string(s), "\r"), " "), NeedRemove: false}
+				e[fi.Name()] = EnvValue{Value: ss, NeedRemove: false}
 			}
 			return nil
 		}()
