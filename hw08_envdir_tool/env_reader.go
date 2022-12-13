@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"path"
@@ -20,6 +21,9 @@ type EnvValue struct {
 // ReadDir reads a specified directory and returns map of env variables.
 // Variables represented as files where filename is name of variable, file first line is a value.
 func ReadDir(dir string) (Environment, error) {
+	if strings.Contains(dir, " ") {
+		return nil, errors.New("folder exists whitespace")
+	}
 	e := make(Environment)
 	files, err := os.ReadDir(dir)
 	if err != nil {
@@ -42,6 +46,7 @@ func ReadDir(dir string) (Environment, error) {
 			s := bytes.ReplaceAll([]byte(str), []byte{0}, []byte{10})
 
 			val := strings.TrimRight(string(s), "\r")
+			val = strings.TrimRight(val, "\t")
 			val = strings.TrimRight(val, " ")
 			val = strings.TrimRight(val, "\t")
 			if str == "" {
