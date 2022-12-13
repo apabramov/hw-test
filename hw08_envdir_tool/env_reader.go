@@ -40,17 +40,25 @@ func ReadDir(dir string) (Environment, error) {
 		str := scanner.Text()
 
 		s := strings.ReplaceAll(str, "\u0000", "\n")
+		s = trimEndValidate(s)
 
-		val := strings.TrimRight(s, "\r")
-		val = strings.TrimRight(val, "\t")
-		val = strings.TrimRight(val, " ")
-		val = strings.TrimRight(val, "\t")
 		if str == "" {
 			e[fi.Name()] = EnvValue{Value: "", NeedRemove: true}
 		} else {
-			e[fi.Name()] = EnvValue{Value: val, NeedRemove: false}
+			e[fi.Name()] = EnvValue{Value: s, NeedRemove: false}
 		}
 		f.Close()
 	}
 	return e, nil
+}
+
+// Search last validate symbol.
+func trimEndValidate(s string) string {
+	r := []rune(s)
+	for i := len(r) - 1; i > 0; i-- {
+		if r[i] != ' ' && r[i] != '\t' {
+			return string(r[:i+1])
+		}
+	}
+	return s
 }
