@@ -56,7 +56,7 @@ func ReadDir(dir string) (Environment, error) {
 func trimEndValidate(s string) string {
 	r := []rune(s)
 	for i := len(r) - 1; i > 0; i-- {
-		if r[i] != ' ' && r[i] != '\t' {
+		if r[i] != ' ' && r[i] != '\t' && r[i] != '\r' {
 			return string(r[:i+1])
 		}
 	}
