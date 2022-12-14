@@ -55,10 +55,18 @@ func ReadDir(dir string) (Environment, error) {
 // Search last validate symbol.
 func trimEndValidate(s string) string {
 	r := []rune(s)
-	for i := len(r) - 1; i > 0; i-- {
+	n := 0
+	for i := len(r) - 1; i >= 0; i-- {
 		if r[i] != ' ' && r[i] != '\t' && r[i] != '\r' {
-			return string(r[:i+1])
+			n = i
+			break
 		}
+	}
+	if n > 0 {
+		return string(r[:n+1])
+	}
+	if n == 0 {
+		return ""
 	}
 	return s
 }
