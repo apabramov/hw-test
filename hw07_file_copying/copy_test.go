@@ -34,6 +34,7 @@ func TestCopy(t *testing.T) {
 		t.Run(fmt.Sprintf("check %s", tc.cmp), func(t *testing.T) {
 			f, err := os.CreateTemp("", "tmp")
 			require.NoError(t, err)
+			defer f.Close()
 
 			err = Copy(tc.from, f.Name(), tc.offset, tc.limit)
 			require.NoError(t, err)
@@ -44,6 +45,7 @@ func TestCopy(t *testing.T) {
 
 			cmp, err := td.Open(tc.cmp)
 			require.NoError(t, err)
+			defer cmp.Close()
 
 			fc, err := cmp.Stat()
 			require.NoError(t, err)
@@ -54,8 +56,6 @@ func TestCopy(t *testing.T) {
 			c, err := os.ReadFile(tc.cmp)
 			require.NoError(t, err)
 
-			f.Close()
-			cmp.Close()
 			os.Remove(f.Name())
 			require.Equal(t, fc.Size(), out.Size(), "File size not equal")
 			require.True(t, reflect.DeepEqual(b, c), "DeepEqual file not equal")

@@ -38,59 +38,33 @@ func TestRun(t *testing.T) {
 		require.LessOrEqual(t, runTasksCount, int32(workersCount+maxErrorsCount), "extra tasks were started")
 	})
 
-	t.Run("tasks without errors", func(t *testing.T) {
-		tasksCount := 50
-		tasks := make([]Task, 0, tasksCount)
-
-		var runTasksCount int32
-		var sumTime time.Duration
-
-		for i := 0; i < tasksCount; i++ {
-			taskSleep := time.Millisecond * time.Duration(rand.Intn(100))
-			sumTime += taskSleep
-
-			tasks = append(tasks, func() error {
-				time.Sleep(taskSleep)
-				atomic.AddInt32(&runTasksCount, 1)
-				return nil
-			})
-		}
-
+	t.Run("tasks eventually", func(t *testing.T) {
+		var runTasksCount, finishTasksCount int32
 		workersCount := 5
-		maxErrorsCount := 1
+		tasks := make([]Task, 0, workersCount)
+		waitCh := make(chan struct{})
 
-		start := time.Now()
-		err := Run(tasks, workersCount, maxErrorsCount)
-		elapsedTime := time.Since(start)
-		require.NoError(t, err)
-
-		require.Equal(t, runTasksCount, int32(tasksCount), "not all tasks were completed")
-		require.LessOrEqual(t, int64(elapsedTime), int64(sumTime/2), "tasks were run sequentially?")
-	})
-
-	t.Run("tasks without errors without sleep", func(t *testing.T) {
-		tasksCount := 50
-		tasks := make([]Task, 0, tasksCount)
-		var sumTime time.Duration
-		var runTasksCount int32
-
-		for i := 0; i < tasksCount; i++ {
-			taskSleep := time.Millisecond * time.Duration(rand.Intn(100))
-			sumTime += taskSleep
-
+		for i := 0; i < workersCount; i++ {
 			tasks = append(tasks, func() error {
-				time.Sleep(taskSleep)
 				atomic.AddInt32(&runTasksCount, 1)
+				<-waitCh
+				atomic.AddInt32(&finishTasksCount, 1)
 				return nil
 			})
 		}
 
-		workersCount := 4
-		maxErrorsCount := 1
+		cntErr := make(chan error)
+
+		go func() {
+			cntErr <- Run(tasks, workersCount, workersCount)
+		}()
 
 		require.Eventually(t, func() bool {
-			err := Run(tasks, workersCount, maxErrorsCount)
-			return err == nil
-		}, sumTime/3, time.Millisecond, "extra tasks were started")
+			return atomic.LoadInt32(&runTasksCount) == int32(workersCount)
+		}, time.Second, time.Millisecond)
+
+		close(waitCh)
+
+		require.NoError(t, <-cntErr)
 	})
 }
