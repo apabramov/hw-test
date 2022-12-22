@@ -2,7 +2,6 @@ package hw09structvalidator
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"testing"
 
@@ -93,12 +92,7 @@ func TestValidate(t *testing.T) {
 			tt := tt
 			t.Parallel()
 			if err := Validate(tt.in); err != nil {
-				var v ValidationErrors
-				if errors.As(err, &v) {
-					require.Equal(t, tt.expectedErr, err)
-				} else {
-					require.Equal(t, tt.expectedErr, err)
-				}
+				require.Equal(t, tt.expectedErr, err)
 			}
 		})
 	}
