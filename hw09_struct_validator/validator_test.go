@@ -82,6 +82,10 @@ func TestValidate(t *testing.T) {
 			in:          &Check{Mi: []int{1, 22}},
 			expectedErr: ValidationErrors{ValidationError{Field: "Mi", Err: ErrMax}},
 		},
+		{
+			in:          &[]int{1, 2},
+			expectedErr: ValidationErrors{ValidationError{Err: ErrStruct}},
+		},
 	}
 
 	for i, tt := range tests {
@@ -92,6 +96,8 @@ func TestValidate(t *testing.T) {
 				var v ValidationErrors
 				if errors.As(err, &v) {
 					require.Equal(t, tt.expectedErr, err)
+				} else {
+					require.NoError(t, err)
 				}
 			}
 		})

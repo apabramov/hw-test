@@ -24,6 +24,7 @@ var (
 	ErrIn     = errors.New("error in")
 
 	ErrValidate = errors.New("error validate")
+	ErrStruct   = errors.New("error struct")
 )
 
 func (v ValidationErrors) Error() string {
@@ -35,36 +36,37 @@ func (v ValidationErrors) Error() string {
 }
 
 func Validate(v interface{}) error {
-	var ve ValidationErrors
 	if reflect.ValueOf(v).Elem().Kind() != reflect.Struct {
-		return ve
+		return ValidationErrors{ValidationError{Err: ErrStruct}}
 	}
 	t := reflect.ValueOf(v).Elem()
 	typ := t.Type()
+	var ve ValidationErrors
 	for i, f := range reflect.VisibleFields(typ) {
 		if !f.IsExported() {
 			continue
 		}
-		if tagValue, ok := typ.Field(i).Tag.Lookup("validate"); ok {
-			name := typ.Field(i).Name
-			switch val := t.Field(i).Interface().(type) {
-			case string:
-				if err := validateString(val, tagValue, name); len(err) > 0 {
-					ve = append(ve, err...)
-				}
-			case []string:
-				if err := validateArrString(val, tagValue, name); len(err) > 0 {
-					ve = append(ve, err...)
-				}
-			case int:
-				if err := validateInt(val, tagValue, name); len(err) > 0 {
-					ve = append(ve, err...)
-				}
-			case []int:
-				if err := validateArrInt(val, tagValue, name); len(err) > 0 {
-					ve = append(ve, err...)
-				}
-			}
+		tagValue, ok := typ.Field(i).Tag.Lookup("validate")
+		if !ok {
+			continue
+		}
+		name := typ.Field(i).Name
+		var err error
+		switch val := t.Field(i).Interface().(type) {
+		case string:
+			err = validateString(val, tagValue, name)
+		case []string:
+			err = validateArrString(val, tagValue, name)
+		case int:
+			err = validateInt(val, tagValue, name)
+		case []int:
+			err = validateArrInt(val, tagValue, name)
+		}
+		var v ValidationErrors
+		if errors.As(err, &v) {
+			ve = append(ve, v...)
+		} else {
+			return err
 		}
 	}
 	return ve
@@ -91,28 +93,27 @@ func checkArray(s []string, name string) error {
 	return nil
 }
 
-func validateString(val string, tagValue string, name string) ValidationErrors {
+func validateString(val string, tagValue string, name string) error {
 	var ve ValidationErrors
 	if val == "" {
-		return ve
+		return nil
 	}
 	s := strings.Split(tagValue, "|")
 	for _, v := range s {
 		m := strings.Split(v, ":")
 		if err := checkArray(m, name); err != nil {
-			ve = append(ve, ValidationError{name, err})
-			continue
+			return err
 		}
 		switch m[0] {
 		case "len":
 			if l, err := strconv.Atoi(m[1]); err != nil {
-				ve = append(ve, ValidationError{name, err})
+				return err
 			} else if len(val) > l {
 				ve = append(ve, ValidationError{name, ErrLen})
 			}
 		case "regexp":
 			if reg, err := regexp.Compile(m[1]); err != nil {
-				ve = append(ve, ValidationError{name, err})
+				return err
 			} else if !reg.Match([]byte(val)) {
 				ve = append(ve, ValidationError{name, ErrRegExp})
 			}
@@ -123,34 +124,33 @@ func validateString(val string, tagValue string, name string) ValidationErrors {
 	return ve
 }
 
-func validateInt(val int, tagValue string, name string) ValidationErrors {
+func validateInt(val int, tagValue string, name string) error {
 	var ve ValidationErrors
 	if val == 0 {
-		return ve
+		return nil
 	}
 	s := strings.Split(tagValue, "|")
 	for _, v := range s {
 		m := strings.Split(v, ":")
 		if err := checkArray(m, name); err != nil {
-			ve = append(ve, ValidationError{name, err})
-			continue
+			return err
 		}
 		switch m[0] {
 		case "min":
 			if l, err := strconv.Atoi(m[1]); err != nil {
-				ve = append(ve, ValidationError{name, err})
+				return err
 			} else if l > val {
 				ve = append(ve, ValidationError{name, ErrMin})
 			}
 		case "max":
 			if l, err := strconv.Atoi(m[1]); err != nil {
-				ve = append(ve, ValidationError{name, err})
+				return err
 			} else if l < val {
 				ve = append(ve, ValidationError{name, ErrMax})
 			}
 		case "in":
 			if ok, err := containsArray(strings.Split(m[1], ","), val); err != nil {
-				ve = append(ve, ValidationError{name, err})
+				return err
 			} else if !ok {
 				ve = append(ve, ValidationError{name, ErrIn})
 			}
@@ -161,21 +161,31 @@ func validateInt(val int, tagValue string, name string) ValidationErrors {
 	return ve
 }
 
-func validateArrInt(val []int, tagValue string, name string) ValidationErrors {
+func validateArrInt(val []int, tagValue string, name string) error {
 	var ve ValidationErrors
 	for _, v := range val {
-		if err := validateInt(v, tagValue, name); len(err) > 0 {
-			ve = append(ve, err...)
+		if err := validateInt(v, tagValue, name); err != nil {
+			var v ValidationErrors
+			if errors.As(err, &v) {
+				ve = append(ve, v...)
+			} else {
+				return err
+			}
 		}
 	}
 	return ve
 }
 
-func validateArrString(val []string, tagValue string, name string) ValidationErrors {
+func validateArrString(val []string, tagValue string, name string) error {
 	var ve ValidationErrors
 	for _, v := range val {
-		if err := validateString(v, tagValue, name); len(err) > 0 {
-			ve = append(ve, err...)
+		if err := validateString(v, tagValue, name); err != nil {
+			var v ValidationErrors
+			if errors.As(err, &v) {
+				ve = append(ve, v...)
+			} else {
+				return err
+			}
 		}
 	}
 	return ve

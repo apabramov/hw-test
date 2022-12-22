@@ -1,4 +1,4 @@
-module github.com/apabramov/hw09_struct_validator
+module github.com/apabramov/hw_test/hw09_struct_validator
 
 go 1.16
 
