@@ -37,7 +37,7 @@ func (v ValidationErrors) Error() string {
 
 func Validate(v interface{}) error {
 	if reflect.ValueOf(v).Elem().Kind() != reflect.Struct {
-		return ValidationErrors{ValidationError{Err: ErrStruct}}
+		return ErrStruct
 	}
 	t := reflect.ValueOf(v).Elem()
 	typ := t.Type()
@@ -63,11 +63,10 @@ func Validate(v interface{}) error {
 			err = validateArrInt(val, tagValue, name)
 		}
 		var v ValidationErrors
-		if errors.As(err, &v) {
-			ve = append(ve, v...)
-		} else {
+		if !errors.As(err, &v) {
 			return err
 		}
+		ve = append(ve, v...)
 	}
 	return ve
 }
@@ -166,11 +165,10 @@ func validateArrInt(val []int, tagValue string, name string) error {
 	for _, v := range val {
 		if err := validateInt(v, tagValue, name); err != nil {
 			var v ValidationErrors
-			if errors.As(err, &v) {
-				ve = append(ve, v...)
-			} else {
+			if !errors.As(err, &v) {
 				return err
 			}
+			ve = append(ve, v...)
 		}
 	}
 	return ve
@@ -181,11 +179,10 @@ func validateArrString(val []string, tagValue string, name string) error {
 	for _, v := range val {
 		if err := validateString(v, tagValue, name); err != nil {
 			var v ValidationErrors
-			if errors.As(err, &v) {
-				ve = append(ve, v...)
-			} else {
+			if !errors.As(err, &v) {
 				return err
 			}
+			ve = append(ve, v...)
 		}
 	}
 	return ve

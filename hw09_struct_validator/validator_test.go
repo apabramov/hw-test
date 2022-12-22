@@ -84,7 +84,7 @@ func TestValidate(t *testing.T) {
 		},
 		{
 			in:          &[]int{1, 2},
-			expectedErr: ValidationErrors{ValidationError{Err: ErrStruct}},
+			expectedErr: ErrStruct,
 		},
 	}
 
@@ -97,7 +97,7 @@ func TestValidate(t *testing.T) {
 				if errors.As(err, &v) {
 					require.Equal(t, tt.expectedErr, err)
 				} else {
-					require.NoError(t, err)
+					require.Equal(t, tt.expectedErr, err)
 				}
 			}
 		})
