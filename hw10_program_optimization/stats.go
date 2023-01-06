@@ -2,7 +2,6 @@ package hw10programoptimization
 
 import (
 	"bufio"
-	"fmt"
 	"io"
 	"strings"
 
@@ -23,37 +22,21 @@ type User struct {
 type DomainStat map[string]int
 
 func GetDomainStat(r io.Reader, domain string) (DomainStat, error) {
-	u, err := getUsers(r)
-	if err != nil {
-		return nil, fmt.Errorf("get users error: %w", err)
-	}
-	return countDomains(u, domain)
+	return countDomains(r, domain)
 }
 
-type users [100_000]User
-
-func getUsers(r io.Reader) (result users, err error) {
-	i := 0
-	fileScanner := bufio.NewScanner(r)
-	for fileScanner.Scan() {
-		var user User
-		if err = easyjson.Unmarshal(fileScanner.Bytes(), &user); err != nil {
-			return
-		}
-		result[i] = user
-		i++
-	}
-	return
-}
-
-func countDomains(u users, domain string) (DomainStat, error) {
-	result := make(DomainStat)
-
+func countDomains(r io.Reader, domain string) (DomainStat, error) {
 	var d strings.Builder
-	d.WriteString(".")
+	d.WriteRune('.')
 	d.WriteString(domain)
 
-	for _, user := range u {
+	fileScanner := bufio.NewScanner(r)
+	var user User
+	result := make(DomainStat)
+	for fileScanner.Scan() {
+		if err := easyjson.Unmarshal(fileScanner.Bytes(), &user); err != nil {
+			return nil, err
+		}
 		if strings.Contains(user.Email, d.String()) {
 			result[strings.ToLower(strings.SplitN(user.Email, "@", 2)[1])]++
 		}
