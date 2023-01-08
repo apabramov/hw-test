@@ -43,4 +43,22 @@ func TestGetDomainStat(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, DomainStat{}, result)
 	})
+
+	t.Run("email foo", func(t *testing.T) {
+		result, err := GetDomainStat(bytes.NewBufferString(`{"Email":"foo"}`), "")
+		require.NoError(t, err)
+		require.Equal(t, DomainStat{}, result)
+	})
+
+	t.Run("email bar@", func(t *testing.T) {
+		result, err := GetDomainStat(bytes.NewBufferString(`{"Email":"bar@"}`), "")
+		require.NoError(t, err)
+		require.Equal(t, DomainStat{}, result)
+	})
+
+	t.Run("email @fizz", func(t *testing.T) {
+		result, err := GetDomainStat(bytes.NewBufferString(`{"Email":"@fizz"}`), "")
+		require.NoError(t, err)
+		require.Equal(t, DomainStat{}, result)
+	})
 }
