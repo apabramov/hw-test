@@ -1,9 +1,9 @@
 package memorystorage
 
 import (
-	"dp-git/github.com/stretchr/testify/require"
 	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/storage"
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
 )
