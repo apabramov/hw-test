@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/util"
 	"log"
 	"os"
 	"os/signal"
@@ -13,7 +14,6 @@ import (
 	cfg "github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/config"
 	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/logger"
 	internalhttp "github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/server/http"
-	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/util"
 )
 
 var configFile string
@@ -32,7 +32,7 @@ func main() {
 
 	config, err := cfg.NewConfig(configFile)
 	if err != nil {
-		return
+		log.Fatal(err)
 	}
 	logg, err := logger.New(config.Logger.Level)
 	if err != nil {

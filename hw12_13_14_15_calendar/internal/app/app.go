@@ -15,12 +15,12 @@ type Logger interface {
 }
 
 type Storage interface {
-	Add(event storage.Event) error
-	Upd(event storage.Event) error
-	Del(event storage.Event) error
-	ListByDay(dt time.Time) ([]storage.Event, error)
-	ListByWeek(dt time.Time) ([]storage.Event, error)
-	ListByMonth(dt time.Time) ([]storage.Event, error)
+	Add(ctx context.Context, event storage.Event) error
+	Update(ctx context.Context, event storage.Event) error
+	Del(ctx context.Context, event storage.Event) error
+	ListByDay(ctx context.Context, dt time.Time) ([]storage.Event, error)
+	ListByWeek(ctx context.Context, dt time.Time) ([]storage.Event, error)
+	ListByMonth(ctx context.Context, dt time.Time) ([]storage.Event, error)
 }
 
 func New(logger Logger, storage Storage) *App {

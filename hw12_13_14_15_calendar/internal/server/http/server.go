@@ -6,7 +6,6 @@ import (
 	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/config"
 	"github.com/pkg/errors"
 	"net/http"
-	"time"
 )
 
 type Server struct {
@@ -21,7 +20,6 @@ type Logger interface {
 	Warn(msg string)
 	Debug(msg string)
 	Error(msg string)
-	InfoHttp(r *http.Request, httpStatus int, duration time.Duration)
 }
 
 type Application interface { // TODO
@@ -41,7 +39,6 @@ func NewServer(log Logger, app Application, cfg config.ServerConf) *Server {
 func (s *Server) Start(ctx context.Context) error {
 	s.Log.Info(fmt.Sprintf("server starting: %v:%v", s.Host, s.Port))
 	if err := s.Srv.ListenAndServe(); err != nil {
-		s.Log.Info(err.Error())
 		if !errors.Is(err, http.ErrServerClosed) {
 			return err
 		}
@@ -53,7 +50,6 @@ func (s *Server) Start(ctx context.Context) error {
 func (s *Server) Stop(ctx context.Context) error {
 	s.Log.Info(fmt.Sprintf("server stopping:  %v:%v", s.Host, s.Port))
 	if err := s.Srv.Shutdown(ctx); err != nil {
-		s.Log.Error(err.Error())
 		return err
 	}
 	return nil

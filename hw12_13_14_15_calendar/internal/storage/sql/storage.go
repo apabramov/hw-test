@@ -2,7 +2,6 @@ package sqlstorage
 
 import (
 	"context"
-	_ "embed"
 	"time"
 
 	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/config"
@@ -15,17 +14,8 @@ import (
 type Storage struct {
 	Dsn string
 	DB  *sqlx.DB
-	Ctx context.Context
 	Log *logger.Logger
 }
-
-var (
-	//go:embed statements/insert.sql
-	ins string
-
-	//go:embed statements/update.sql
-	upd string
-)
 
 func New(log *logger.Logger, conf config.StorageConf) *Storage {
 	return &Storage{Log: log, Dsn: conf.Dsn}
@@ -38,23 +28,27 @@ func (s *Storage) Connect(ctx context.Context) error {
 	}
 
 	s.DB = db
-	s.Ctx = ctx
 	return nil
 }
 
 func (s *Storage) Close() error {
 	if err := s.DB.Close(); err != nil {
-		s.Log.Error(errors.Wrap(err, "err closing db connection").Error())
+		s.Log.Info(errors.Wrap(err, "err closing db connection").Error())
 		return err
 	}
-	s.Log.Error("db connection gracefully closed")
+	s.Log.Info("db connection gracefully closed")
 	return nil
 }
 
-func (s *Storage) Add(event storage.Event) error {
+func (s *Storage) Add(ctx context.Context, event storage.Event) error {
+	sql := `INSERT INTO events
+(id, title, date, duration, description, userid, notify)
+VALUES
+    ($1, $2, $3, $4, $5, $6, $7)`
+
 	_, err := s.DB.ExecContext(
-		s.Ctx,
-		ins,
+		ctx,
+		sql,
 		event.ID,
 		event.Title,
 		event.Date,
@@ -66,10 +60,22 @@ func (s *Storage) Add(event storage.Event) error {
 	return err
 }
 
-func (s *Storage) Upd(event storage.Event) error {
+func (s *Storage) Update(ctx context.Context, event storage.Event) error {
+	sql := `UPDATE
+    events
+SET
+    title = $2,
+    date = $3,
+    duration = $4,
+    description = $5,
+    userid = $6,
+    notify = $7
+WHERE
+    id = $1`
+
 	_, err := s.DB.ExecContext(
-		s.Ctx,
-		upd,
+		ctx,
+		sql,
 		event.ID,
 		event.Title,
 		event.Date,
@@ -81,25 +87,25 @@ func (s *Storage) Upd(event storage.Event) error {
 	return err
 }
 
-func (s *Storage) Del(event storage.Event) error {
-	_, err := s.DB.ExecContext(s.Ctx, "delete from events where id = &1", event.ID)
+func (s *Storage) Del(ctx context.Context, event storage.Event) error {
+	_, err := s.DB.ExecContext(ctx, "delete from events where id = &1", event.ID)
 	return err
 }
 
-func (s *Storage) List(bg time.Time, fn time.Time) ([]storage.Event, error) {
+func (s *Storage) List(ctx context.Context, bg time.Time, fn time.Time) ([]storage.Event, error) {
 	var ev []storage.Event
 	err := s.DB.Select(&ev, "select * from events e where e.date = $1 and e.duration = $2", bg, bg.Sub(fn))
 	return ev, err
 }
 
-func (s *Storage) ListByDay(dt time.Time) ([]storage.Event, error) {
-	return s.List(dt, dt.AddDate(0, 0, 1))
+func (s *Storage) ListByDay(ctx context.Context, dt time.Time) ([]storage.Event, error) {
+	return s.List(ctx, dt, dt.AddDate(0, 0, 1))
 }
 
-func (s *Storage) ListByWeek(dt time.Time) ([]storage.Event, error) {
-	return s.List(dt, dt.AddDate(0, 0, 7))
+func (s *Storage) ListByWeek(ctx context.Context, dt time.Time) ([]storage.Event, error) {
+	return s.List(ctx, dt, dt.AddDate(0, 0, 7))
 }
 
-func (s *Storage) ListByMonth(dt time.Time) ([]storage.Event, error) {
-	return s.List(dt, dt.AddDate(0, 1, 0))
+func (s *Storage) ListByMonth(ctx context.Context, dt time.Time) ([]storage.Event, error) {
+	return s.List(ctx, dt, dt.AddDate(0, 1, 0))
 }
