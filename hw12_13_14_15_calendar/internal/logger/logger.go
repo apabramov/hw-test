@@ -1,20 +1,44 @@
 package logger
 
-import "fmt"
+import (
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+	"os"
+)
 
-type Logger struct { // TODO
+type Logger struct {
+	Log *zap.Logger
 }
 
-func New(level string) *Logger {
-	return &Logger{}
+func New(level string) (*Logger, error) {
+	config := zap.NewProductionEncoderConfig()
+	config.EncodeTime = zapcore.ISO8601TimeEncoder
+	en := zapcore.NewJSONEncoder(config)
+
+	al, err := zap.ParseAtomicLevel(level)
+
+	core := zapcore.NewTee(
+		zapcore.NewCore(en, zapcore.AddSync(os.Stdout), al),
+	)
+
+	l := zap.New(core)
+
+	log := l.Named("calendar")
+	return &Logger{log}, err
 }
 
 func (l Logger) Info(msg string) {
-	fmt.Println(msg)
+	l.Log.Info(msg)
 }
 
 func (l Logger) Error(msg string) {
-	// TODO
+	l.Log.Error(msg)
 }
 
-// TODO
+func (l Logger) Warn(msg string) {
+	l.Log.Warn(msg)
+}
+
+func (l Logger) Debug(msg string) {
+	l.Log.Debug(msg)
+}

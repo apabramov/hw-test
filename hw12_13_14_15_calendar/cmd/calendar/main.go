@@ -3,15 +3,17 @@ package main
 import (
 	"context"
 	"flag"
+	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/util"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
-	"github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/app"
-	"github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/logger"
-	internalhttp "github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/server/http"
-	memorystorage "github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/storage/memory"
+	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/app"
+	cfg "github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/config"
+	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/logger"
+	internalhttp "github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/server/http"
 )
 
 var configFile string
@@ -28,13 +30,19 @@ func main() {
 		return
 	}
 
-	config := NewConfig()
-	logg := logger.New(config.Logger.Level)
+	config, err := cfg.NewConfig(configFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	logg, err := logger.New(config.Logger.Level)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	storage := memorystorage.New()
+	storage := util.NewStorage(logg, config.Storage)
 	calendar := app.New(logg, storage)
 
-	server := internalhttp.NewServer(logg, calendar)
+	server := internalhttp.NewServer(logg, calendar, config.Servers)
 
 	ctx, cancel := signal.NotifyContext(context.Background(),
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
