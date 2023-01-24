@@ -40,6 +40,38 @@ func runGrpc(app *app.App, cfg *cfg.Config, log *logger.Logger) {
 	}
 }
 
+func startGRPC(ctx context.Context, cfg *cfg.Config, logg *logger.Logger, a *app.App) {
+	srv := internalgrpc.NewServer(logg, a, cfg.GrpsServ)
+
+	go func() {
+		<-ctx.Done()
+		srv.Stop()
+	}()
+
+	go func() {
+		if err := srv.Start(); err != nil {
+			logg.Error("failed to start grpc server: " + err.Error())
+		}
+	}()
+}
+
+func startHTTP(ctx context.Context, config *cfg.Config, logg *logger.Logger) {
+	srv := NewServer(ctx, logg, config)
+
+	go func() {
+		if err := srv.Start(ctx); err != nil {
+			logg.Error("failed to start http server: " + err.Error())
+		}
+	}()
+
+	go func() {
+		<-ctx.Done()
+		if err := srv.Stop(ctx); err != nil {
+			logg.Error("failed to stop http server: " + err.Error())
+		}
+	}()
+}
+
 func TestHTTPServerAdd(t *testing.T) {
 	logg, err := logger.New("info")
 	require.NoError(t, err)
@@ -108,8 +140,8 @@ func TestHTTPServerUpdate(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 	defer cancel()
 
-	go runRest(ctx, &cfg)
-	go runGrpc(calendar, &cfg, logg)
+	startHTTP(ctx, &cfg, logg)
+	startGRPC(ctx, &cfg, logg, calendar)
 
 	event := bytes.NewBufferString(`{
   "event" : {
