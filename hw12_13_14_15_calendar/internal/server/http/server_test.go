@@ -134,7 +134,10 @@ func TestHTTPServerUpdate(t *testing.T) {
 }`)
 
 	t.Run("update", func(t *testing.T) {
-		resp, err := http.Post("http://127.0.0.1:18001/v1/event/add", "", event)
+		cli := http.Client{}
+		req, err := http.NewRequest(http.MethodPost, "http://127.0.0.1:18001/v1/event/add", event)
+		require.NoError(t, err)
+		resp, err := cli.Do(req)
 		require.NoError(t, err)
 		defer resp.Body.Close()
 		require.Equal(t, http.StatusOK, resp.StatusCode)
@@ -142,8 +145,7 @@ func TestHTTPServerUpdate(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, "{\"Error\":\"\"}", string(body))
 
-		cli := http.Client{}
-		req, err := http.NewRequest(http.MethodPut, "http://127.0.0.1:18001/v1/event/update", eu)
+		req, err = http.NewRequest(http.MethodPut, "http://127.0.0.1:18001/v1/event/update", eu)
 		require.NoError(t, err)
 		resp, err = cli.Do(req)
 		require.NoError(t, err)
