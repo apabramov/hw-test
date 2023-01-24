@@ -45,6 +45,7 @@ func NewServer(ctx context.Context, log Logger, cfg *config.Config) *Server {
 	mux := runtime.NewServeMux()
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 	err := pb.RegisterEventServiceHandlerFromEndpoint(ctx, mux, net.JoinHostPort(cfg.GrpsServ.Host, cfg.GrpsServ.Port), opts)
+
 	if err != nil {
 		log.Info(err.Error())
 	}

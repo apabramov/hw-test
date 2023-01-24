@@ -19,6 +19,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const bufSize = 1024 * 1024
+
 func runRest(ctx context.Context, cfg *cfg.Config) {
 	srv := NewServer(ctx, nil, cfg)
 	log.Printf("server listening at %s:%s", cfg.HttpServ.Host, cfg.HttpServ.Port)
@@ -29,10 +31,9 @@ func runRest(ctx context.Context, cfg *cfg.Config) {
 
 func runGrpc(app *app.App, cfg *cfg.Config, log *logger.Logger) {
 	srv := internalgrpc.NewServer(log, app, cfg.GrpsServ)
-
 	lis, err := net.Listen("tcp", net.JoinHostPort(cfg.GrpsServ.Host, cfg.GrpsServ.Port))
 	if err != nil {
-		log.Info(err.Error())
+		panic(err)
 	}
 	if err := srv.Srv.Serve(lis); err != nil {
 		panic(err)
@@ -158,7 +159,7 @@ func TestHTTPServerUpdate(t *testing.T) {
 		s.Srv.ServeHTTP(resp, req)
 		body, err = io.ReadAll(resp.Body)
 		require.NoError(t, err)
-		require.Equal(t, "{\"ID\":\"2bb0d64e-8f6e-4863-b1d8-8b20018c743d\", \"Title\":\"Hello update\", \"Date\":\"2023-01-01T16:00:00Z\", \"Duration\":\"600s\", \"Description\":\"Hello\", \"UserId\":\"cc526645-6fad-461e-9ebf-82a7d936a61f\", \"Notify\":\"300s\"}", string(body))
+		require.Equal(t, `{"ID":"2bb0d64e-8f6e-4863-b1d8-8b20018c743d", "Title":"Hello update", "Date":"2023-01-01T16:00:00Z", "Duration":"600s", "Description":"Hello", "UserId":"cc526645-6fad-461e-9ebf-82a7d936a61f", "Notify":"300s"}`, string(body))
 	})
 }
 
