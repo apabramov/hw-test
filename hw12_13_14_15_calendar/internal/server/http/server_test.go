@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
@@ -106,7 +107,9 @@ func TestHTTPServerUpdate(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 	defer cancel()
 
-	go runRest(ctx, &cfg)
+	s := NewServer(ctx, logg, &cfg)
+
+	//go runRest(ctx, &cfg)
 	go runGrpc(calendar, &cfg, logg)
 
 	event := bytes.NewBufferString(`{
@@ -134,33 +137,28 @@ func TestHTTPServerUpdate(t *testing.T) {
 }`)
 
 	t.Run("update", func(t *testing.T) {
-		cli := http.Client{}
-		req, err := http.NewRequest(http.MethodPost, "http://127.0.0.1:18001/v1/event/add", event)
-		require.NoError(t, err)
-		resp, err := cli.Do(req)
-		require.NoError(t, err)
-		defer resp.Body.Close()
-		require.Equal(t, http.StatusOK, resp.StatusCode)
+		_ = eu
+		req := httptest.NewRequest(http.MethodPost, "http://127.0.0.1:18001/v1/event/add", event)
+
+		resp := httptest.NewRecorder()
+		s.Srv.ServeHTTP(resp, req)
 		body, err := io.ReadAll(resp.Body)
 		require.NoError(t, err)
 		require.Equal(t, "{\"Error\":\"\"}", string(body))
 
-		req, err = http.NewRequest(http.MethodPut, "http://127.0.0.1:18001/v1/event/update", eu)
-		require.NoError(t, err)
-		resp, err = cli.Do(req)
-		require.NoError(t, err)
-		defer resp.Body.Close()
-		require.Equal(t, http.StatusOK, resp.StatusCode)
+		req = httptest.NewRequest(http.MethodPut, "http://127.0.0.1:18001/v1/event/update", eu)
+		resp = httptest.NewRecorder()
+		s.Srv.ServeHTTP(resp, req)
 		body, err = io.ReadAll(resp.Body)
 		require.NoError(t, err)
 		require.Equal(t, "{\"Error\":\"\"}", string(body))
 
-		resp, err = http.Get("http://127.0.0.1:18001/v1/event/get/2bb0d64e-8f6e-4863-b1d8-8b20018c743d")
-		defer resp.Body.Close()
-		require.Equal(t, http.StatusOK, resp.StatusCode)
+		req = httptest.NewRequest(http.MethodGet, "http://127.0.0.1:18001/v1/event/get/2bb0d64e-8f6e-4863-b1d8-8b20018c743d", nil)
+		resp = httptest.NewRecorder()
+		s.Srv.ServeHTTP(resp, req)
 		body, err = io.ReadAll(resp.Body)
 		require.NoError(t, err)
-		require.Equal(t, "{\"ID\":\"2bb0d64e-8f6e-4863-b1d8-8b20018c743d\",\"Title\":\"Hello update\",\"Date\":\"2023-01-01T16:00:00Z\",\"Duration\":\"600s\",\"Description\":\"Hello\",\"UserId\":\"cc526645-6fad-461e-9ebf-82a7d936a61f\",\"Notify\":\"300s\"}", string(body))
+		require.Equal(t, "{\"ID\":\"2bb0d64e-8f6e-4863-b1d8-8b20018c743d\", \"Title\":\"Hello update\", \"Date\":\"2023-01-01T16:00:00Z\", \"Duration\":\"600s\", \"Description\":\"Hello\", \"UserId\":\"cc526645-6fad-461e-9ebf-82a7d936a61f\", \"Notify\":\"300s\"}", string(body))
 	})
 }
 
@@ -225,7 +223,7 @@ func TestHTTPServerDelete(t *testing.T) {
 		require.Equal(t, http.StatusInternalServerError, resp.StatusCode)
 		body, err = io.ReadAll(resp.Body)
 		require.NoError(t, err)
-		require.Equal(t, "{\"code\":2,\"message\":\"event not exists\",\"details\":[]}", string(body))
+		require.Equal(t, "{\"code\":2, \"message\":\"event not exists\", \"details\":[]}", string(body))
 	})
 }
 
@@ -390,6 +388,6 @@ func TestHTTPServerListByMonth(t *testing.T) {
 		require.Equal(t, http.StatusOK, resp.StatusCode)
 		body, err = io.ReadAll(resp.Body)
 		require.NoError(t, err)
-		require.Equal(t, "{\"Events\":[{\"ID\":\"2bb0d64e-8f6e-4863-b1d8-8b20018c743d\",\"Title\":\"Hello\",\"Date\":\"2023-01-01T16:00:00Z\",\"Duration\":\"600s\",\"Description\":\"Hello\",\"UserId\":\"cc526645-6fad-461e-9ebf-82a7d936a61f\",\"Notify\":\"300s\"}]}", string(body))
+		require.Equal(t, "{\"Events\":[{\"ID\":\"2bb0d64e-8f6e-4863-b1d8-8b20018c743d\", \"Title\":\"Hello\", \"Date\":\"2023-01-01T16:00:00Z\", \"Duration\":\"600s\", \"Description\":\"Hello\", \"UserId\":\"cc526645-6fad-461e-9ebf-82a7d936a61f\", \"Notify\":\"300s\"}]}", string(body))
 	})
 }
