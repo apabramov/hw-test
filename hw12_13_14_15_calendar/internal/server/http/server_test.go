@@ -95,7 +95,7 @@ func TestHTTPServerUpdate(t *testing.T) {
 	cfg := cfg.Config{
 		HttpServ: cfg.HttpServerConf{
 			Host: "127.0.0.1",
-			Port: "8001",
+			Port: "18001",
 		},
 		GrpsServ: cfg.GrpcServerConf{
 			Host: "127.0.0.1",
@@ -134,7 +134,7 @@ func TestHTTPServerUpdate(t *testing.T) {
 }`)
 
 	t.Run("update", func(t *testing.T) {
-		resp, err := http.Post("http://127.0.0.1:8001/v1/event/add", "", event)
+		resp, err := http.Post("http://127.0.0.1:18001/v1/event/add", "", event)
 		require.NoError(t, err)
 		defer resp.Body.Close()
 		require.Equal(t, http.StatusOK, resp.StatusCode)
@@ -143,7 +143,7 @@ func TestHTTPServerUpdate(t *testing.T) {
 		require.Equal(t, "{\"Error\":\"\"}", string(body))
 
 		cli := http.Client{}
-		req, err := http.NewRequest(http.MethodPut, "http://127.0.0.1:8001/v1/event/update", eu)
+		req, err := http.NewRequest(http.MethodPut, "http://127.0.0.1:18001/v1/event/update", eu)
 		require.NoError(t, err)
 		resp, err = cli.Do(req)
 		require.NoError(t, err)
@@ -153,7 +153,7 @@ func TestHTTPServerUpdate(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, "{\"Error\":\"\"}", string(body))
 
-		resp, err = http.Get("http://127.0.0.1:8001/v1/event/get/2bb0d64e-8f6e-4863-b1d8-8b20018c743d")
+		resp, err = http.Get("http://127.0.0.1:18001/v1/event/get/2bb0d64e-8f6e-4863-b1d8-8b20018c743d")
 		defer resp.Body.Close()
 		require.Equal(t, http.StatusOK, resp.StatusCode)
 		body, err = io.ReadAll(resp.Body)
@@ -172,7 +172,7 @@ func TestHTTPServerDelete(t *testing.T) {
 	cfg := cfg.Config{
 		HttpServ: cfg.HttpServerConf{
 			Host: "127.0.0.1",
-			Port: "8002",
+			Port: "18002",
 		},
 		GrpsServ: cfg.GrpcServerConf{
 			Host: "127.0.0.1",
@@ -199,7 +199,7 @@ func TestHTTPServerDelete(t *testing.T) {
 }`)
 
 	t.Run("delete", func(t *testing.T) {
-		resp, err := http.Post("http://127.0.0.1:8002/v1/event/add", "", event)
+		resp, err := http.Post("http://127.0.0.1:18002/v1/event/add", "", event)
 		require.NoError(t, err)
 		defer resp.Body.Close()
 		require.Equal(t, http.StatusOK, resp.StatusCode)
@@ -208,7 +208,7 @@ func TestHTTPServerDelete(t *testing.T) {
 		require.Equal(t, "{\"Error\":\"\"}", string(body))
 
 		cli := http.Client{}
-		req, err := http.NewRequest(http.MethodDelete, "http://127.0.0.1:8002/v1/event/delete/2bb0d64e-8f6e-4863-b1d8-8b20018c743d", nil)
+		req, err := http.NewRequest(http.MethodDelete, "http://127.0.0.1:18002/v1/event/delete/2bb0d64e-8f6e-4863-b1d8-8b20018c743d", nil)
 		require.NoError(t, err)
 		resp, err = cli.Do(req)
 		require.NoError(t, err)
@@ -218,7 +218,7 @@ func TestHTTPServerDelete(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, "{\"Error\":\"\"}", string(body))
 
-		resp, err = http.Get("http://127.0.0.1:8002/v1/event/get/2bb0d64e-8f6e-4863-b1d8-8b20018c743d")
+		resp, err = http.Get("http://127.0.0.1:18002/v1/event/get/2bb0d64e-8f6e-4863-b1d8-8b20018c743d")
 		defer resp.Body.Close()
 		require.Equal(t, http.StatusInternalServerError, resp.StatusCode)
 		body, err = io.ReadAll(resp.Body)
@@ -237,7 +237,7 @@ func TestHTTPServerListByDay(t *testing.T) {
 	cfg := cfg.Config{
 		HttpServ: cfg.HttpServerConf{
 			Host: "127.0.0.1",
-			Port: "8003",
+			Port: "18003",
 		},
 		GrpsServ: cfg.GrpcServerConf{
 			Host: "127.0.0.1",
@@ -264,7 +264,7 @@ func TestHTTPServerListByDay(t *testing.T) {
 }`)
 
 	t.Run("list day", func(t *testing.T) {
-		resp, err := http.Post("http://127.0.0.1:8003/v1/event/add", "", event)
+		resp, err := http.Post("http://127.0.0.1:18003/v1/event/add", "", event)
 		require.NoError(t, err)
 		defer resp.Body.Close()
 		require.Equal(t, http.StatusOK, resp.StatusCode)
@@ -272,7 +272,7 @@ func TestHTTPServerListByDay(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, "{\"Error\":\"\"}", string(body))
 
-		resp, err = http.Post("http://127.0.0.1:8003/v1/event/list/day", "", bytes.NewBufferString("{\n  \"Date\":\"2023-01-01T16:00:00Z\"\n}"))
+		resp, err = http.Post("http://127.0.0.1:18003/v1/event/list/day", "", bytes.NewBufferString("{\n  \"Date\":\"2023-01-01T16:00:00Z\"\n}"))
 		require.NoError(t, err)
 		defer resp.Body.Close()
 		require.Equal(t, http.StatusOK, resp.StatusCode)
@@ -292,7 +292,7 @@ func TestHTTPServerListByWeek(t *testing.T) {
 	cfg := cfg.Config{
 		HttpServ: cfg.HttpServerConf{
 			Host: "127.0.0.1",
-			Port: "8004",
+			Port: "18004",
 		},
 		GrpsServ: cfg.GrpcServerConf{
 			Host: "127.0.0.1",
@@ -319,7 +319,7 @@ func TestHTTPServerListByWeek(t *testing.T) {
 }`)
 
 	t.Run("list week", func(t *testing.T) {
-		resp, err := http.Post("http://127.0.0.1:8004/v1/event/add", "", event)
+		resp, err := http.Post("http://127.0.0.1:18004/v1/event/add", "", event)
 		require.NoError(t, err)
 		defer resp.Body.Close()
 		require.Equal(t, http.StatusOK, resp.StatusCode)
@@ -327,7 +327,7 @@ func TestHTTPServerListByWeek(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, "{\"Error\":\"\"}", string(body))
 
-		resp, err = http.Post("http://127.0.0.1:8004/v1/event/list/week", "", bytes.NewBufferString("{\n  \"Date\":\"2023-01-01T16:00:00Z\"\n}"))
+		resp, err = http.Post("http://127.0.0.1:18004/v1/event/list/week", "", bytes.NewBufferString("{\n  \"Date\":\"2023-01-01T16:00:00Z\"\n}"))
 		require.NoError(t, err)
 		defer resp.Body.Close()
 		require.Equal(t, http.StatusOK, resp.StatusCode)
@@ -347,7 +347,7 @@ func TestHTTPServerListByMonth(t *testing.T) {
 	cfg := cfg.Config{
 		HttpServ: cfg.HttpServerConf{
 			Host: "127.0.0.1",
-			Port: "8005",
+			Port: "18005",
 		},
 		GrpsServ: cfg.GrpcServerConf{
 			Host: "127.0.0.1",
@@ -374,7 +374,7 @@ func TestHTTPServerListByMonth(t *testing.T) {
 }`)
 
 	t.Run("list month", func(t *testing.T) {
-		resp, err := http.Post("http://127.0.0.1:8005/v1/event/add", "", event)
+		resp, err := http.Post("http://127.0.0.1:18005/v1/event/add", "", event)
 		require.NoError(t, err)
 		defer resp.Body.Close()
 		require.Equal(t, http.StatusOK, resp.StatusCode)
@@ -382,7 +382,7 @@ func TestHTTPServerListByMonth(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, "{\"Error\":\"\"}", string(body))
 
-		resp, err = http.Post("http://127.0.0.1:8005/v1/event/list/month", "", bytes.NewBufferString("{\n  \"Date\":\"2023-01-01T00:00:00Z\"\n}"))
+		resp, err = http.Post("http://127.0.0.1:18005/v1/event/list/month", "", bytes.NewBufferString("{\n  \"Date\":\"2023-01-01T00:00:00Z\"\n}"))
 		require.NoError(t, err)
 		defer resp.Body.Close()
 		require.Equal(t, http.StatusOK, resp.StatusCode)
