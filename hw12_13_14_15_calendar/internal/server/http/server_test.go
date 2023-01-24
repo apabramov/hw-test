@@ -48,7 +48,7 @@ func TestHTTPServerAdd(t *testing.T) {
 	cfg := cfg.Config{
 		HttpServ: cfg.HttpServerConf{
 			Host: "127.0.0.1",
-			Port: "8000",
+			Port: "18000",
 		},
 		GrpsServ: cfg.GrpcServerConf{
 			Host: "127.0.0.1",
@@ -75,7 +75,7 @@ func TestHTTPServerAdd(t *testing.T) {
 }`)
 
 	t.Run("add", func(t *testing.T) {
-		resp, err := http.Post("http://127.0.0.1:8000/v1/event/add", "application/json", event)
+		resp, err := http.Post("http://127.0.0.1:18000/v1/event/add", "application/json", event)
 		require.NoError(t, err)
 		defer resp.Body.Close()
 		require.Equal(t, http.StatusOK, resp.StatusCode)
