@@ -3,7 +3,6 @@ package internalhttp
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"io"
 	"log"
 	"net"
@@ -15,7 +14,6 @@ import (
 	cfg "github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/config"
 	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/logger"
 	internalgrpc "github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/server/grpc"
-	st "github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/storage"
 	memorystorage "github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/storage/memory"
 	"github.com/stretchr/testify/require"
 )
@@ -160,10 +158,7 @@ func TestHTTPServerUpdate(t *testing.T) {
 		require.Equal(t, http.StatusOK, resp.StatusCode)
 		body, err = io.ReadAll(resp.Body)
 		require.NoError(t, err)
-		var st st.Event
-		err = json.Unmarshal(body, &st)
-		require.NoError(t, err)
-		require.Equal(t, "Hello update", st.Title)
+		require.Equal(t, "{\"ID\":\"2bb0d64e-8f6e-4863-b1d8-8b20018c743d\",\"Title\":\"Hello update\",\"Date\":\"2023-01-01T16:00:00Z\",\"Duration\":\"600s\",\"Description\":\"Hello\",\"UserId\":\"cc526645-6fad-461e-9ebf-82a7d936a61f\",\"Notify\":\"300s\"}", string(body))
 	})
 }
 
