@@ -1,42 +1,85 @@
 package internalgrpc
 
 import (
+	"context"
 	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/app"
 	cfg "github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/config"
 	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/logger"
+	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/server/pb"
+	memorystorage "github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/storage/memory"
+	"github.com/stretchr/testify/require"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"log"
 	"net"
+	"testing"
+	"time"
 )
 
-//func TestGRPCServerAdd(t *testing.T) {
-//	logg, err := logger.New("info")
-//	require.NoError(t, err)
-//
-//	storage := memorystorage.New()
-//	calendar := app.New(logg, storage)
-//
-//	cfg := cfg.Config{
-//		GrpsServ: cfg.GrpcServerConf{
-//			Host: "",
-//			Port: "9000",
-//		},
-//	}
-//
-//	go runGrpc(calendar, &cfg, logg)
-//
-//	t.Run("add", func(t *testing.T) {
-//		conn, err := grpc.Dial(net.JoinHostPort(cfg.GrpsServ.Host, cfg.GrpsServ.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
-//		if err != nil {
-//			log.Fatalf("did not connect: %v", err)
-//		}
-//		defer conn.Close()
-//		c := pb.NewEventServiceClient(conn)
-//		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-//		defer cancel()
-//		r, err := c.Add(ctx, &pb.EventRequest{Event: &pb.Event{ID: "2bb0d64e-8f6e-4863-b1d8-8b20018c743d", UserId: "2bb0d64e-8f6e-4863-b1d8-8b20018c743f"}})
-//		require.NoError(t, err)
-//		require.Equal(t, "", r.GetError())
-//	})
-//}
+func TestGRPC(t *testing.T) {
+	l, err := net.Listen("tcp", ":0")
+	require.NoError(t, err)
+
+	clientOptions := []grpc.DialOption{grpc.WithInsecure()}
+	cc, err := grpc.Dial(l.Addr().String(), clientOptions...)
+	require.NoError(t, err)
+
+	logg, err := logger.New("info")
+	require.NoError(t, err)
+
+	storage := memorystorage.New()
+	calendar := app.New(logg, storage)
+
+	cfg := cfg.Config{
+		GrpsServ: cfg.GrpcServerConf{
+			Host: "",
+			Port: "9000",
+		},
+	}
+
+	server := NewServer(logg, calendar, cfg.GrpsServ)
+	require.NoError(t, err)
+
+	go func() {
+		server.Srv.Serve(l)
+	}()
+
+	client := pb.NewEventServiceClient(cc)
+
+	_ = client
+}
+
+func TestGRPCServerAdd(t *testing.T) {
+	logg, err := logger.New("info")
+	require.NoError(t, err)
+
+	storage := memorystorage.New()
+	calendar := app.New(logg, storage)
+
+	cfg := cfg.Config{
+		GrpsServ: cfg.GrpcServerConf{
+			Host: "",
+			Port: "8082",
+		},
+	}
+
+	go runGrpc(calendar, &cfg, logg)
+
+	t.Run("add", func(t *testing.T) {
+		conn, err := grpc.Dial(net.JoinHostPort(cfg.GrpsServ.Host, cfg.GrpsServ.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
+		if err != nil {
+			log.Fatalf("did not connect: %v", err)
+		}
+		defer conn.Close()
+		c := pb.NewEventServiceClient(conn)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+		r, err := c.Add(ctx, &pb.EventRequest{Event: &pb.Event{ID: "2bb0d64e-8f6e-4863-b1d8-8b20018c743d", UserId: "2bb0d64e-8f6e-4863-b1d8-8b20018c743f"}})
+		require.NoError(t, err)
+		require.Equal(t, "", r.GetError())
+	})
+}
+
 //
 //func TestGRPCServerUpdate(t *testing.T) {
 //	logg, err := logger.New("info")
