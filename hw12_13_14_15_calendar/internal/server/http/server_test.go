@@ -128,11 +128,11 @@ func TestHTTPServerUpdate(t *testing.T) {
 
 	cfg := cfg.Config{
 		HttpServ: cfg.HttpServerConf{
-			Host: "127.0.0.1",
+			Host: "",
 			Port: "8080",
 		},
 		GrpsServ: cfg.GrpcServerConf{
-			Host: "127.0.0.1",
+			Host: "",
 			Port: "8081",
 		},
 	}
@@ -169,7 +169,7 @@ func TestHTTPServerUpdate(t *testing.T) {
 
 	t.Run("update", func(t *testing.T) {
 		c := &http.Client{}
-		req, err := http.NewRequest(http.MethodPost, "http://127.0.0.1:8080/v1/event/add", event)
+		req, err := http.NewRequest(http.MethodPost, "http://:8080/v1/event/add", event)
 		require.NoError(t, err)
 
 		resp, err := c.Do(req)
@@ -179,7 +179,7 @@ func TestHTTPServerUpdate(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, "{\"Error\":\"\"}", string(body))
 
-		req, err = http.NewRequest(http.MethodPut, "http://127.0.0.1:8080/v1/event/update", eu)
+		req, err = http.NewRequest(http.MethodPut, "http://:8080/v1/event/update", eu)
 		require.NoError(t, err)
 		resp, err = c.Do(req)
 		require.NoError(t, err)
@@ -188,7 +188,7 @@ func TestHTTPServerUpdate(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, "{\"Error\":\"\"}", string(body))
 
-		req, err = http.NewRequest(http.MethodGet, "http://127.0.0.1:8080/v1/event/get/2bb0d64e-8f6e-4863-b1d8-8b20018c743d", nil)
+		req, err = http.NewRequest(http.MethodGet, "http://:8080/v1/event/get/2bb0d64e-8f6e-4863-b1d8-8b20018c743d", nil)
 		require.NoError(t, err)
 		resp, err = c.Do(req)
 		require.NoError(t, err)
