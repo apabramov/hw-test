@@ -2,6 +2,83 @@ syntax = "proto3";
 
 package event;
 
+option go_package = "./;pb";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+import "google/api/annotations.proto";
+//import "google/api/http.proto";
+
+service EventService {
+  rpc Add(EventRequest) returns (ErrorResponse){
+    option (google.api.http) = {
+      post: "/v1/event/add"
+      body: "*"
+    };
+  }
+  rpc Update(EventRequest) returns (ErrorResponse){
+    option (google.api.http) = {
+      put: "/v1/event/update"
+      body: "*"
+    };
+  }
+  rpc Del(IDRequest) returns (ErrorResponse){
+    option (google.api.http) = {
+      delete: "/v1/event/delete/{ID}"
+    };
+  }
+  rpc Get(IDRequest) returns (Event){
+    option (google.api.http) = {
+      get: "/v1/event/get/{ID}"
+    };
+  }
+  rpc ListByDay(ListRequest) returns (ListResponse){
+    option (google.api.http) = {
+      post: "/v1/event/list/day"
+      body: "*"
+    };
+  }
+  rpc ListByWeek(ListRequest) returns (ListResponse){
+    option (google.api.http) = {
+      post: "/v1/event/list/week"
+      body: "*"
+    };
+  }
+  rpc ListByMonth(ListRequest) returns (ListResponse){
+    option (google.api.http) = {
+      post: "/v1/event/list/month"
+      body: "*"
+    };
+  }
+
+}
+
 message Event {
-    // TODO
+  string ID = 1;
+  string Title = 2;
+  google.protobuf.Timestamp Date = 3;
+  google.protobuf.Duration Duration = 4;
+  string Description = 5;
+  string UserId = 6;
+  google.protobuf.Duration Notify = 7;
+}
+
+message EventRequest {
+  Event event = 1;
+}
+
+message ErrorResponse {
+  string Error = 1;
+}
+
+message IDRequest {
+  string ID = 1;
+}
+
+message ListRequest {
+  google.protobuf.Timestamp Date = 1;
+}
+
+message ListResponse {
+  repeated Event Events = 1;
 }

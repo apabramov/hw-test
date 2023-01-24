@@ -2,11 +2,12 @@ package memorystorage
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/storage"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
-	"testing"
-	"time"
 )
 
 func TestAddStorage(t *testing.T) {
@@ -51,9 +52,7 @@ func TestUpdateStorage(t *testing.T) {
 
 		l, err := s.ListByDay(ctx, e.Date.Add(-10*time.Second))
 		require.NoError(t, err)
-
 		require.True(t, l[0].Description == "update description")
-
 	})
 }
 
@@ -108,6 +107,7 @@ func TestListWeekStorage(t *testing.T) {
 		require.Len(t, l, 2)
 	})
 }
+
 func TestListMonthStorage(t *testing.T) {
 	e := storage.Event{
 		ID:          uuid.New(),
@@ -130,6 +130,7 @@ func TestListMonthStorage(t *testing.T) {
 		require.Len(t, l, 1)
 	})
 }
+
 func TestDeleteStorage(t *testing.T) {
 	e := storage.Event{
 		ID:          uuid.New(),
@@ -147,7 +148,7 @@ func TestDeleteStorage(t *testing.T) {
 	err := s.Add(ctx, e)
 	require.NoError(t, err)
 	t.Run("delete", func(t *testing.T) {
-		err := s.Del(ctx, e)
+		err := s.Del(ctx, e.ID.String())
 		require.NoError(t, err)
 	})
 }

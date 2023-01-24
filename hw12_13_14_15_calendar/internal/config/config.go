@@ -1,14 +1,16 @@
 package config
 
 import (
-	"github.com/BurntSushi/toml"
 	"os"
+
+	"github.com/BurntSushi/toml"
 )
 
 type Config struct {
-	Logger  LoggerConf
-	Servers ServerConf
-	Storage StorageConf
+	Logger   LoggerConf
+	HttpServ HttpServerConf
+	GrpsServ GrpcServerConf
+	Storage  StorageConf
 }
 
 type LoggerConf struct {
@@ -16,9 +18,14 @@ type LoggerConf struct {
 	// TODO
 }
 
-type ServerConf struct {
+type HttpServerConf struct {
 	Host string
-	Port int
+	Port string
+}
+
+type GrpcServerConf struct {
+	Host string
+	Port string
 }
 
 type StorageConf struct {

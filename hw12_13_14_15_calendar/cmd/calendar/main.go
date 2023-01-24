@@ -3,17 +3,16 @@ package main
 import (
 	"context"
 	"flag"
-	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/util"
 	"log"
-	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/app"
 	cfg "github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/config"
 	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/logger"
+	internalgrpc "github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/server/grpc"
 	internalhttp "github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/server/http"
+	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/util"
 )
 
 var configFile string
@@ -42,28 +41,40 @@ func main() {
 	storage := util.NewStorage(logg, config.Storage)
 	calendar := app.New(logg, storage)
 
-	server := internalhttp.NewServer(logg, calendar, config.Servers)
-
 	ctx, cancel := signal.NotifyContext(context.Background(),
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	defer cancel()
 
+	logg.Info("calendar is running...")
+	startHTTP(ctx, &config, logg)
+	startGRPC(ctx, &config, logg, calendar)
+}
+
+func startGRPC(ctx context.Context, cfg *cfg.Config, logg *logger.Logger, a *app.App) {
+	srv := internalgrpc.NewServer(logg, a, cfg.GrpsServ)
+
 	go func() {
 		<-ctx.Done()
+		srv.Stop()
+	}()
+	if err := srv.Start(); err != nil {
+		logg.Error("failed to start grpc server: " + err.Error())
+	}
+}
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
-		defer cancel()
+func startHTTP(ctx context.Context, config *cfg.Config, logg *logger.Logger) {
+	srv := internalhttp.NewServer(ctx, logg, config)
 
-		if err := server.Stop(ctx); err != nil {
-			logg.Error("failed to stop http server: " + err.Error())
+	go func() {
+		if err := srv.Start(ctx); err != nil {
+			logg.Error("failed to start http server: " + err.Error())
 		}
 	}()
 
-	logg.Info("calendar is running...")
-
-	if err := server.Start(ctx); err != nil {
-		logg.Error("failed to start http server: " + err.Error())
-		cancel()
-		os.Exit(1) //nolint:gocritic
-	}
+	go func() {
+		<-ctx.Done()
+		if err := srv.Stop(ctx); err != nil {
+			logg.Error("failed to stop http server: " + err.Error())
+		}
+	}()
 }

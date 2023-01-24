@@ -3,16 +3,24 @@ package internalhttp
 import (
 	"context"
 	"fmt"
-	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/config"
-	"github.com/pkg/errors"
+	"net"
 	"net/http"
+	"time"
+
+	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/config"
+	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/server/pb"
+	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/storage"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/pkg/errors"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 type Server struct {
 	Host string
-	Port int
+	Port string
 	Log  Logger
-	Srv  *http.Server
+	Srv  *runtime.ServeMux
 }
 
 type Logger interface {
@@ -22,23 +30,31 @@ type Logger interface {
 	Error(msg string)
 }
 
-type Application interface { // TODO
+type Application interface {
+	AddEvent(ctx context.Context, event storage.Event) error
+	UpdateEvent(ctx context.Context, event storage.Event) error
+	DelEvent(ctx context.Context, event storage.Event) error
+	GetEvent(ctx context.Context, event storage.Event) (storage.Event, error)
+	ListByDayEvents(ctx context.Context, t time.Time) ([]storage.Event, error)
+	ListByWeekEvents(ctx context.Context, t time.Time) ([]storage.Event, error)
+	ListByMonthEvents(ctx context.Context, t time.Time) ([]storage.Event, error)
 }
 
-func NewServer(log Logger, app Application, cfg config.ServerConf) *Server {
-	s := &Server{Log: log, Host: cfg.Host, Port: cfg.Port}
-
-	m := http.NewServeMux()
-	m.Handle("/", loggingMiddleware(s, s.Log))
-
-	srv := &http.Server{Addr: fmt.Sprintf("%v:%v", s.Host, s.Port), Handler: m}
-	s.Srv = srv
+func NewServer(ctx context.Context, log Logger, cfg *config.Config) *Server {
+	s := &Server{Log: log, Host: cfg.HttpServ.Host, Port: cfg.HttpServ.Port}
+	mux := runtime.NewServeMux()
+	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
+	err := pb.RegisterEventServiceHandlerFromEndpoint(ctx, mux, net.JoinHostPort(cfg.GrpsServ.Host, cfg.GrpsServ.Port), opts)
+	if err != nil {
+		log.Info(err.Error())
+	}
+	s.Srv = mux
 	return s
 }
 
 func (s *Server) Start(ctx context.Context) error {
-	s.Log.Info(fmt.Sprintf("server starting: %v:%v", s.Host, s.Port))
-	if err := s.Srv.ListenAndServe(); err != nil {
+	s.Log.Info(fmt.Sprintf("HTTP starting: %v:%v", s.Host, s.Port))
+	if err := http.ListenAndServe(net.JoinHostPort(s.Host, s.Port), s.Srv); err != nil {
 		if !errors.Is(err, http.ErrServerClosed) {
 			return err
 		}
@@ -48,13 +64,6 @@ func (s *Server) Start(ctx context.Context) error {
 }
 
 func (s *Server) Stop(ctx context.Context) error {
-	s.Log.Info(fmt.Sprintf("server stopping:  %v:%v", s.Host, s.Port))
-	if err := s.Srv.Shutdown(ctx); err != nil {
-		return err
-	}
+	s.Log.Info(fmt.Sprintf("HTTP stopping:  %v:%v", s.Host, s.Port))
 	return nil
-}
-
-func (s *Server) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	fmt.Fprintf(w, "hello-world")
 }
