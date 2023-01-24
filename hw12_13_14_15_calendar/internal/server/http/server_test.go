@@ -143,7 +143,7 @@ func TestHTTPServerUpdate(t *testing.T) {
 	startHTTP(ctx, &cfg, logg)
 	startGRPC(ctx, &cfg, logg, calendar)
 
-	event := bytes.NewBufferString(`{
+	event := `{
   "event" : {
 		"ID":"2bb0d64e-8f6e-4863-b1d8-8b20018c743d",
 		"Title":"Hello",
@@ -153,7 +153,7 @@ func TestHTTPServerUpdate(t *testing.T) {
 		"UserId":"cc526645-6fad-461e-9ebf-82a7d936a61f",
 		"Notify":"300s"
   }
-}`)
+}`
 
 	eu := bytes.NewBufferString(`{
   "event" : {
@@ -166,10 +166,34 @@ func TestHTTPServerUpdate(t *testing.T) {
 		"Notify":"300s"
   }
 }`)
+	t.Run("add", func(t *testing.T) {
+		resp, err := http.Post("http://:8080/v1/event/add", "", bytes.NewBufferString(event))
+		require.NoError(t, err)
+		defer resp.Body.Close()
+		require.Equal(t, http.StatusOK, resp.StatusCode)
+		body, err := io.ReadAll(resp.Body)
+		require.NoError(t, err)
+		require.Equal(t, "{\"Error\":\"\"}", string(body))
+	})
+
+	t.Run("delete", func(t *testing.T) {
+		cli := http.Client{}
+		req, err := http.NewRequest(http.MethodDelete, "http://:8080/v1/event/delete/2bb0d64e-8f6e-4863-b1d8-8b20018c743d", nil)
+		require.NoError(t, err)
+
+		resp, err := cli.Do(req)
+		require.NoError(t, err)
+
+		defer resp.Body.Close()
+		require.Equal(t, http.StatusOK, resp.StatusCode)
+		body, err := io.ReadAll(resp.Body)
+		require.NoError(t, err)
+		require.Equal(t, "{\"Error\":\"\"}", string(body))
+	})
 
 	t.Run("update", func(t *testing.T) {
 		c := &http.Client{}
-		req, err := http.NewRequest(http.MethodPost, "http://:8080/v1/event/add", event)
+		req, err := http.NewRequest(http.MethodPost, "http://:8080/v1/event/add", bytes.NewBufferString(event))
 		require.NoError(t, err)
 
 		resp, err := c.Do(req)
@@ -198,6 +222,37 @@ func TestHTTPServerUpdate(t *testing.T) {
 		require.NoError(t, err)
 
 		require.Equal(t, "Hello update", result.Title)
+	})
+
+	t.Run("list day", func(t *testing.T) {
+		resp, err := http.Post("http://:8080/v1/event/list/day", "", bytes.NewBufferString(`{"Date":"2023-01-01T16:00:00Z"}`))
+		require.NoError(t, err)
+		defer resp.Body.Close()
+		require.Equal(t, http.StatusOK, resp.StatusCode)
+		body, err := io.ReadAll(resp.Body)
+		require.NoError(t, err)
+		require.Equal(t, "{\"Events\":[]}", string(body))
+	})
+
+	t.Run("list week", func(t *testing.T) {
+		resp, err := http.Post("http://:8080/v1/event/list/week", "", bytes.NewBufferString(`{"Date":"2023-01-01T16:00:00Z"}`))
+		require.NoError(t, err)
+		defer resp.Body.Close()
+		require.Equal(t, http.StatusOK, resp.StatusCode)
+		body, err := io.ReadAll(resp.Body)
+		require.NoError(t, err)
+		require.Equal(t, "{\"Events\":[]}", string(body))
+	})
+
+	t.Run("list month", func(t *testing.T) {
+		resp, err := http.Post("http://:8080/v1/event/list/month", "", bytes.NewBufferString(`{"Date":"2023-01-01T00:00:00Z"}`))
+		require.NoError(t, err)
+		defer resp.Body.Close()
+		require.Equal(t, http.StatusOK, resp.StatusCode)
+		var result Ev
+		err = json.NewDecoder(resp.Body).Decode(&result)
+		require.NoError(t, err)
+		require.Equal(t, "Hello update", result.Events[0].Title)
 	})
 }
 
