@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/server/pb"
 	"google.golang.org/grpc"
 	"io"
 	"log"
@@ -50,6 +51,9 @@ func startGRPC(t *testing.T, ctx context.Context, cfg *cfg.Config, logg *logger.
 
 	srv := internalgrpc.NewServer(logg, a, cfg.GrpsServ)
 
+	client := pb.NewEventServiceClient(cc)
+
+	_ = client
 	go func() {
 		<-ctx.Done()
 		srv.Stop()
@@ -148,7 +152,7 @@ func TestHTTPServerUpdate(t *testing.T) {
 	defer cancel()
 
 	startHTTP(ctx, &cfg, logg)
-	startGRPC(ctx, &cfg, logg, calendar)
+	startGRPC(t, ctx, &cfg, logg, calendar)
 
 	event := `{
   "event" : {
