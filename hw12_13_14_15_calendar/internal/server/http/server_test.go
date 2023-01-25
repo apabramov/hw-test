@@ -10,6 +10,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
@@ -70,7 +71,7 @@ func startGRPC(t *testing.T, ctx context.Context, cfg *cfg.Config, logg *logger.
 	//}()
 }
 
-func startHTTP(ctx context.Context, config *cfg.Config, logg *logger.Logger) {
+func startHTTP(ctx context.Context, config *cfg.Config, logg *logger.Logger) *Server {
 	//l, err := net.Listen("tcp", ":8070")
 
 	srv := NewServer(ctx, logg, config)
@@ -93,6 +94,8 @@ func startHTTP(ctx context.Context, config *cfg.Config, logg *logger.Logger) {
 			logg.Error("failed to stop http server: " + err.Error())
 		}
 	}()
+
+	return srv
 }
 
 //func TestHTTPServerAdd(t *testing.T) {
@@ -163,7 +166,7 @@ func TestHTTPServerUpdate(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 	defer cancel()
 
-	startHTTP(ctx, &cfg, logg)
+	s := startHTTP(ctx, &cfg, logg)
 	startGRPC(t, ctx, &cfg, logg, calendar)
 
 	event := `{
@@ -190,9 +193,15 @@ func TestHTTPServerUpdate(t *testing.T) {
   }
 }`)
 	t.Run("add", func(t *testing.T) {
-		resp, err := http.Post("http://:64000/v1/event/add", "", bytes.NewBufferString(event))
-		require.NoError(t, err)
+		//resp, err := http.Post("http://:64000/v1/event/add", "", bytes.NewBufferString(event))
+
+		r := httptest.NewRequest(http.MethodPost, "http://:64000/v1/event/add", bytes.NewBufferString(event))
+		w := httptest.NewRecorder()
+		s.Srv.ServeHTTP(w, r)
+
+		resp := w.Result()
 		defer resp.Body.Close()
+
 		require.Equal(t, http.StatusOK, resp.StatusCode)
 		body, err := io.ReadAll(resp.Body)
 		require.NoError(t, err)
