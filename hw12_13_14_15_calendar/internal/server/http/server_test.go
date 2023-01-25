@@ -152,7 +152,7 @@ func TestHTTPServerUpdate(t *testing.T) {
 	cfg := cfg.Config{
 		HttpServ: cfg.HttpServerConf{
 			Host: "",
-			Port: "8080",
+			Port: "64000",
 		},
 		GrpsServ: cfg.GrpcServerConf{
 			Host: "",
@@ -190,7 +190,7 @@ func TestHTTPServerUpdate(t *testing.T) {
   }
 }`)
 	t.Run("add", func(t *testing.T) {
-		resp, err := http.Post("http://:8080/v1/event/add", "", bytes.NewBufferString(event))
+		resp, err := http.Post("http://:64000/v1/event/add", "", bytes.NewBufferString(event))
 		require.NoError(t, err)
 		defer resp.Body.Close()
 		require.Equal(t, http.StatusOK, resp.StatusCode)
@@ -201,7 +201,7 @@ func TestHTTPServerUpdate(t *testing.T) {
 
 	t.Run("delete", func(t *testing.T) {
 		cli := http.Client{}
-		req, err := http.NewRequest(http.MethodDelete, "http://:8080/v1/event/delete/2bb0d64e-8f6e-4863-b1d8-8b20018c743d", nil)
+		req, err := http.NewRequest(http.MethodDelete, "http://:64000/v1/event/delete/2bb0d64e-8f6e-4863-b1d8-8b20018c743d", nil)
 		require.NoError(t, err)
 
 		resp, err := cli.Do(req)
@@ -216,7 +216,7 @@ func TestHTTPServerUpdate(t *testing.T) {
 
 	t.Run("update", func(t *testing.T) {
 		c := &http.Client{}
-		req, err := http.NewRequest(http.MethodPost, "http://:8080/v1/event/add", bytes.NewBufferString(event))
+		req, err := http.NewRequest(http.MethodPost, "http://:64000/v1/event/add", bytes.NewBufferString(event))
 		require.NoError(t, err)
 
 		resp, err := c.Do(req)
@@ -226,7 +226,7 @@ func TestHTTPServerUpdate(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, "{\"Error\":\"\"}", string(body))
 
-		req, err = http.NewRequest(http.MethodPut, "http://:8080/v1/event/update", eu)
+		req, err = http.NewRequest(http.MethodPut, "http://:64000/v1/event/update", eu)
 		require.NoError(t, err)
 		resp, err = c.Do(req)
 		require.NoError(t, err)
@@ -235,7 +235,7 @@ func TestHTTPServerUpdate(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, "{\"Error\":\"\"}", string(body))
 
-		req, err = http.NewRequest(http.MethodGet, "http://:8080/v1/event/get/2bb0d64e-8f6e-4863-b1d8-8b20018c743d", nil)
+		req, err = http.NewRequest(http.MethodGet, "http://:64000/v1/event/get/2bb0d64e-8f6e-4863-b1d8-8b20018c743d", nil)
 		require.NoError(t, err)
 		resp, err = c.Do(req)
 		require.NoError(t, err)
@@ -248,7 +248,7 @@ func TestHTTPServerUpdate(t *testing.T) {
 	})
 
 	t.Run("list day", func(t *testing.T) {
-		resp, err := http.Post("http://:8080/v1/event/list/day", "", bytes.NewBufferString(`{"Date":"2023-01-01T16:00:00Z"}`))
+		resp, err := http.Post("http://:64000/v1/event/list/day", "", bytes.NewBufferString(`{"Date":"2023-01-01T16:00:00Z"}`))
 		require.NoError(t, err)
 		defer resp.Body.Close()
 		require.Equal(t, http.StatusOK, resp.StatusCode)
@@ -258,7 +258,7 @@ func TestHTTPServerUpdate(t *testing.T) {
 	})
 
 	t.Run("list week", func(t *testing.T) {
-		resp, err := http.Post("http://:8080/v1/event/list/week", "", bytes.NewBufferString(`{"Date":"2023-01-01T16:00:00Z"}`))
+		resp, err := http.Post("http://:64000/v1/event/list/week", "", bytes.NewBufferString(`{"Date":"2023-01-01T16:00:00Z"}`))
 		require.NoError(t, err)
 		defer resp.Body.Close()
 		require.Equal(t, http.StatusOK, resp.StatusCode)
@@ -268,7 +268,7 @@ func TestHTTPServerUpdate(t *testing.T) {
 	})
 
 	t.Run("list month", func(t *testing.T) {
-		resp, err := http.Post("http://:8080/v1/event/list/month", "", bytes.NewBufferString(`{"Date":"2023-01-01T00:00:00Z"}`))
+		resp, err := http.Post("http://:64000/v1/event/list/month", "", bytes.NewBufferString(`{"Date":"2023-01-01T00:00:00Z"}`))
 		require.NoError(t, err)
 		defer resp.Body.Close()
 		require.Equal(t, http.StatusOK, resp.StatusCode)
