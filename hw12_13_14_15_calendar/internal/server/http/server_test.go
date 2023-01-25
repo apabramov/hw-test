@@ -53,6 +53,10 @@ func startGRPC(t *testing.T, ctx context.Context, cfg *cfg.Config, logg *logger.
 
 	client := pb.NewEventServiceClient(cc)
 
+	go func() {
+		srv.Srv.Serve(l)
+	}()
+
 	_ = client
 	go func() {
 		<-ctx.Done()
@@ -67,7 +71,15 @@ func startGRPC(t *testing.T, ctx context.Context, cfg *cfg.Config, logg *logger.
 }
 
 func startHTTP(ctx context.Context, config *cfg.Config, logg *logger.Logger) {
+	//l, err := net.Listen("tcp", ":8070")
+
 	srv := NewServer(ctx, logg, config)
+
+	go func() {
+		if err := http.ListenAndServe(":8070", srv.Srv); err != nil {
+			panic(err)
+		}
+	}()
 
 	go func() {
 		if err := srv.Start(ctx); err != nil {
