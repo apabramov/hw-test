@@ -191,6 +191,8 @@ func TestHTTPServerUpdate(t *testing.T) {
 		"Notify":"300s"
   }
 }`)
+
+	_ = eu
 	t.Run("add", func(t *testing.T) {
 		//resp, err := http.Post("http://:64000/v1/event/add", "", bytes.NewBufferString(event))
 
