@@ -193,10 +193,12 @@ func TestHTTPServerUpdate(t *testing.T) {
 }`)
 
 	_ = eu
+
+	ts := httptest.NewServer(s.Srv)
 	t.Run("add", func(t *testing.T) {
 		//resp, err := http.Post("http://:64000/v1/event/add", "", bytes.NewBufferString(event))
 
-		r := httptest.NewRequest(http.MethodPost, "http://:64000/v1/event/add", bytes.NewBufferString(event))
+		r := httptest.NewRequest(http.MethodPost, ts.URL+"/v1/event/add", bytes.NewBufferString(event))
 		w := httptest.NewRecorder()
 		s.Srv.ServeHTTP(w, r)
 
