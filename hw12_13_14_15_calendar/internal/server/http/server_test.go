@@ -211,20 +211,19 @@ func TestHTTPServerUpdate(t *testing.T) {
 		require.Equal(t, "{\"Error\":\"\"}", string(body))
 	})
 
-	//t.Run("delete", func(t *testing.T) {
-	//	cli := http.Client{}
-	//	req, err := http.NewRequest(http.MethodDelete, "http://:64000/v1/event/delete/2bb0d64e-8f6e-4863-b1d8-8b20018c743d", nil)
-	//	require.NoError(t, err)
-	//
-	//	resp, err := cli.Do(req)
-	//	require.NoError(t, err)
-	//
-	//	defer resp.Body.Close()
-	//	require.Equal(t, http.StatusOK, resp.StatusCode)
-	//	body, err := io.ReadAll(resp.Body)
-	//	require.NoError(t, err)
-	//	require.Equal(t, "{\"Error\":\"\"}", string(body))
-	//})
+	t.Run("delete", func(t *testing.T) {
+		r := httptest.NewRequest(http.MethodDelete, ts.URL+"/v1/event/delete/2bb0d64e-8f6e-4863-b1d8-8b20018c743d", nil)
+		w := httptest.NewRecorder()
+		s.Srv.ServeHTTP(w, r)
+
+		resp := w.Result()
+
+		defer resp.Body.Close()
+		require.Equal(t, http.StatusOK, resp.StatusCode)
+		body, err := io.ReadAll(resp.Body)
+		require.NoError(t, err)
+		require.Equal(t, "{\"Error\":\"\"}", string(body))
+	})
 	//
 	//t.Run("update", func(t *testing.T) {
 	//	c := &http.Client{}
