@@ -43,7 +43,7 @@ func runGrpc(app *app.App, cfg *cfg.Config, log *logger.Logger) {
 }
 
 func startGRPC(t *testing.T, ctx context.Context, cfg *cfg.Config, logg *logger.Logger, a *app.App) {
-	l, err := net.Listen("tcp", ":"+cfg.GrpsServ.Port)
+	l, err := net.Listen("tcp", net.JoinHostPort(cfg.GrpsServ.Host, cfg.GrpsServ.Port))
 	require.NoError(t, err)
 
 	clientOptions := []grpc.DialOption{grpc.WithInsecure()}
@@ -153,12 +153,12 @@ func TestHTTPServerUpdate(t *testing.T) {
 
 	cfg := cfg.Config{
 		HttpServ: cfg.HttpServerConf{
-			Host: "",
-			Port: "64000",
+			Host: "127.0.0.1",
+			Port: "50052",
 		},
 		GrpsServ: cfg.GrpcServerConf{
-			Host: "",
-			Port: "9999",
+			Host: "127.0.0.1",
+			Port: "50051",
 		},
 	}
 
