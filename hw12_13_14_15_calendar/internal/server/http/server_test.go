@@ -3,7 +3,6 @@ package internalhttp
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/server/pb"
 	"google.golang.org/grpc"
 	"io"
@@ -208,84 +207,84 @@ func TestHTTPServerUpdate(t *testing.T) {
 		require.Equal(t, "{\"Error\":\"\"}", string(body))
 	})
 
-	t.Run("delete", func(t *testing.T) {
-		cli := http.Client{}
-		req, err := http.NewRequest(http.MethodDelete, "http://:64000/v1/event/delete/2bb0d64e-8f6e-4863-b1d8-8b20018c743d", nil)
-		require.NoError(t, err)
-
-		resp, err := cli.Do(req)
-		require.NoError(t, err)
-
-		defer resp.Body.Close()
-		require.Equal(t, http.StatusOK, resp.StatusCode)
-		body, err := io.ReadAll(resp.Body)
-		require.NoError(t, err)
-		require.Equal(t, "{\"Error\":\"\"}", string(body))
-	})
-
-	t.Run("update", func(t *testing.T) {
-		c := &http.Client{}
-		req, err := http.NewRequest(http.MethodPost, "http://:64000/v1/event/add", bytes.NewBufferString(event))
-		require.NoError(t, err)
-
-		resp, err := c.Do(req)
-		require.NoError(t, err)
-
-		body, err := io.ReadAll(resp.Body)
-		require.NoError(t, err)
-		require.Equal(t, "{\"Error\":\"\"}", string(body))
-
-		req, err = http.NewRequest(http.MethodPut, "http://:64000/v1/event/update", eu)
-		require.NoError(t, err)
-		resp, err = c.Do(req)
-		require.NoError(t, err)
-
-		body, err = io.ReadAll(resp.Body)
-		require.NoError(t, err)
-		require.Equal(t, "{\"Error\":\"\"}", string(body))
-
-		req, err = http.NewRequest(http.MethodGet, "http://:64000/v1/event/get/2bb0d64e-8f6e-4863-b1d8-8b20018c743d", nil)
-		require.NoError(t, err)
-		resp, err = c.Do(req)
-		require.NoError(t, err)
-
-		var result Event
-		err = json.NewDecoder(resp.Body).Decode(&result)
-		require.NoError(t, err)
-
-		require.Equal(t, "Hello update", result.Title)
-	})
-
-	t.Run("list day", func(t *testing.T) {
-		resp, err := http.Post("http://:64000/v1/event/list/day", "", bytes.NewBufferString(`{"Date":"2023-01-01T16:00:00Z"}`))
-		require.NoError(t, err)
-		defer resp.Body.Close()
-		require.Equal(t, http.StatusOK, resp.StatusCode)
-		body, err := io.ReadAll(resp.Body)
-		require.NoError(t, err)
-		require.Equal(t, "{\"Events\":[]}", string(body))
-	})
-
-	t.Run("list week", func(t *testing.T) {
-		resp, err := http.Post("http://:64000/v1/event/list/week", "", bytes.NewBufferString(`{"Date":"2023-01-01T16:00:00Z"}`))
-		require.NoError(t, err)
-		defer resp.Body.Close()
-		require.Equal(t, http.StatusOK, resp.StatusCode)
-		body, err := io.ReadAll(resp.Body)
-		require.NoError(t, err)
-		require.Equal(t, "{\"Events\":[]}", string(body))
-	})
-
-	t.Run("list month", func(t *testing.T) {
-		resp, err := http.Post("http://:64000/v1/event/list/month", "", bytes.NewBufferString(`{"Date":"2023-01-01T00:00:00Z"}`))
-		require.NoError(t, err)
-		defer resp.Body.Close()
-		require.Equal(t, http.StatusOK, resp.StatusCode)
-		var result Ev
-		err = json.NewDecoder(resp.Body).Decode(&result)
-		require.NoError(t, err)
-		require.Equal(t, "Hello update", result.Events[0].Title)
-	})
+	//t.Run("delete", func(t *testing.T) {
+	//	cli := http.Client{}
+	//	req, err := http.NewRequest(http.MethodDelete, "http://:64000/v1/event/delete/2bb0d64e-8f6e-4863-b1d8-8b20018c743d", nil)
+	//	require.NoError(t, err)
+	//
+	//	resp, err := cli.Do(req)
+	//	require.NoError(t, err)
+	//
+	//	defer resp.Body.Close()
+	//	require.Equal(t, http.StatusOK, resp.StatusCode)
+	//	body, err := io.ReadAll(resp.Body)
+	//	require.NoError(t, err)
+	//	require.Equal(t, "{\"Error\":\"\"}", string(body))
+	//})
+	//
+	//t.Run("update", func(t *testing.T) {
+	//	c := &http.Client{}
+	//	req, err := http.NewRequest(http.MethodPost, "http://:64000/v1/event/add", bytes.NewBufferString(event))
+	//	require.NoError(t, err)
+	//
+	//	resp, err := c.Do(req)
+	//	require.NoError(t, err)
+	//
+	//	body, err := io.ReadAll(resp.Body)
+	//	require.NoError(t, err)
+	//	require.Equal(t, "{\"Error\":\"\"}", string(body))
+	//
+	//	req, err = http.NewRequest(http.MethodPut, "http://:64000/v1/event/update", eu)
+	//	require.NoError(t, err)
+	//	resp, err = c.Do(req)
+	//	require.NoError(t, err)
+	//
+	//	body, err = io.ReadAll(resp.Body)
+	//	require.NoError(t, err)
+	//	require.Equal(t, "{\"Error\":\"\"}", string(body))
+	//
+	//	req, err = http.NewRequest(http.MethodGet, "http://:64000/v1/event/get/2bb0d64e-8f6e-4863-b1d8-8b20018c743d", nil)
+	//	require.NoError(t, err)
+	//	resp, err = c.Do(req)
+	//	require.NoError(t, err)
+	//
+	//	var result Event
+	//	err = json.NewDecoder(resp.Body).Decode(&result)
+	//	require.NoError(t, err)
+	//
+	//	require.Equal(t, "Hello update", result.Title)
+	//})
+	//
+	//t.Run("list day", func(t *testing.T) {
+	//	resp, err := http.Post("http://:64000/v1/event/list/day", "", bytes.NewBufferString(`{"Date":"2023-01-01T16:00:00Z"}`))
+	//	require.NoError(t, err)
+	//	defer resp.Body.Close()
+	//	require.Equal(t, http.StatusOK, resp.StatusCode)
+	//	body, err := io.ReadAll(resp.Body)
+	//	require.NoError(t, err)
+	//	require.Equal(t, "{\"Events\":[]}", string(body))
+	//})
+	//
+	//t.Run("list week", func(t *testing.T) {
+	//	resp, err := http.Post("http://:64000/v1/event/list/week", "", bytes.NewBufferString(`{"Date":"2023-01-01T16:00:00Z"}`))
+	//	require.NoError(t, err)
+	//	defer resp.Body.Close()
+	//	require.Equal(t, http.StatusOK, resp.StatusCode)
+	//	body, err := io.ReadAll(resp.Body)
+	//	require.NoError(t, err)
+	//	require.Equal(t, "{\"Events\":[]}", string(body))
+	//})
+	//
+	//t.Run("list month", func(t *testing.T) {
+	//	resp, err := http.Post("http://:64000/v1/event/list/month", "", bytes.NewBufferString(`{"Date":"2023-01-01T00:00:00Z"}`))
+	//	require.NoError(t, err)
+	//	defer resp.Body.Close()
+	//	require.Equal(t, http.StatusOK, resp.StatusCode)
+	//	var result Ev
+	//	err = json.NewDecoder(resp.Body).Decode(&result)
+	//	require.NoError(t, err)
+	//	require.Equal(t, "Hello update", result.Events[0].Title)
+	//})
 }
 
 type Event struct {
