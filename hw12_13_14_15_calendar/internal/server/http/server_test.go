@@ -154,7 +154,7 @@ func TestHTTPServerUpdate(t *testing.T) {
 	cfg := cfg.Config{
 		HttpServ: cfg.HttpServerConf{
 			Host: "127.0.0.1",
-			Port: "50052",
+			Port: "8080",
 		},
 		GrpsServ: cfg.GrpcServerConf{
 			Host: "127.0.0.1",
