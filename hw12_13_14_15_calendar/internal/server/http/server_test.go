@@ -258,15 +258,19 @@ func TestHTTPServerUpdate(t *testing.T) {
 	//	require.Equal(t, "Hello update", result.Title)
 	//})
 	//
-	//t.Run("list day", func(t *testing.T) {
-	//	resp, err := http.Post("http://:64000/v1/event/list/day", "", bytes.NewBufferString(`{"Date":"2023-01-01T16:00:00Z"}`))
-	//	require.NoError(t, err)
-	//	defer resp.Body.Close()
-	//	require.Equal(t, http.StatusOK, resp.StatusCode)
-	//	body, err := io.ReadAll(resp.Body)
-	//	require.NoError(t, err)
-	//	require.Equal(t, "{\"Events\":[]}", string(body))
-	//})
+	t.Run("list day", func(t *testing.T) {
+		r := httptest.NewRequest(http.MethodPost, ts.URL+"/v1/event/list/day", bytes.NewBufferString(`{"Date":"2023-01-01T16:00:00Z"}`))
+		w := httptest.NewRecorder()
+		s.Srv.ServeHTTP(w, r)
+
+		resp := w.Result()
+
+		defer resp.Body.Close()
+		require.Equal(t, http.StatusOK, resp.StatusCode)
+		body, err := io.ReadAll(resp.Body)
+		require.NoError(t, err)
+		require.Equal(t, "{\"Events\":[]}", string(body))
+	})
 	//
 	//t.Run("list week", func(t *testing.T) {
 	//	resp, err := http.Post("http://:64000/v1/event/list/week", "", bytes.NewBufferString(`{"Date":"2023-01-01T16:00:00Z"}`))
