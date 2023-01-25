@@ -43,7 +43,7 @@ func runGrpc(app *app.App, cfg *cfg.Config, log *logger.Logger) {
 }
 
 func startGRPC(t *testing.T, ctx context.Context, cfg *cfg.Config, logg *logger.Logger, a *app.App) {
-	l, err := net.Listen("tcp", ":0")
+	l, err := net.Listen("tcp", ":"+cfg.GrpsServ.Port)
 	require.NoError(t, err)
 
 	clientOptions := []grpc.DialOption{grpc.WithInsecure()}
@@ -58,16 +58,16 @@ func startGRPC(t *testing.T, ctx context.Context, cfg *cfg.Config, logg *logger.
 	}()
 
 	_ = client
-	go func() {
-		<-ctx.Done()
-		srv.Stop()
-	}()
-
-	go func() {
-		if err := srv.Start(); err != nil {
-			logg.Error("failed to start grpc server: " + err.Error())
-		}
-	}()
+	//go func() {
+	//	<-ctx.Done()
+	//	srv.Stop()
+	//}()
+	//
+	//go func() {
+	//	if err := srv.Start(); err != nil {
+	//		logg.Error("failed to start grpc server: " + err.Error())
+	//	}
+	//}()
 }
 
 func startHTTP(ctx context.Context, config *cfg.Config, logg *logger.Logger) {
@@ -75,11 +75,11 @@ func startHTTP(ctx context.Context, config *cfg.Config, logg *logger.Logger) {
 
 	srv := NewServer(ctx, logg, config)
 
-	go func() {
-		if err := http.ListenAndServe(":8070", srv.Srv); err != nil {
-			panic(err)
-		}
-	}()
+	//go func() {
+	//	if err := http.ListenAndServe(":8070", srv.Srv); err != nil {
+	//		panic(err)
+	//	}
+	//}()
 
 	go func() {
 		if err := srv.Start(ctx); err != nil {
@@ -156,7 +156,7 @@ func TestHTTPServerUpdate(t *testing.T) {
 		},
 		GrpsServ: cfg.GrpcServerConf{
 			Host: "",
-			Port: "8081",
+			Port: "9999",
 		},
 	}
 
