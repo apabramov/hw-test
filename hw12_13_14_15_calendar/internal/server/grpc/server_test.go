@@ -80,55 +80,54 @@ func TestGRPCServerAdd(t *testing.T) {
 	})
 }
 
-//
-//func TestGRPCServerUpdate(t *testing.T) {
-//	logg, err := logger.New("info")
-//	require.NoError(t, err)
-//
-//	storage := memorystorage.New()
-//	calendar := app.New(logg, storage)
-//
-//	cfg := cfg.Config{
-//		GrpsServ: cfg.GrpcServerConf{
-//			Host: "",
-//			Port: "9001",
-//		},
-//	}
-//
-//	go runGrpc(calendar, &cfg, logg)
-//
-//	t.Run("update", func(t *testing.T) {
-//		conn, err := grpc.Dial(net.JoinHostPort(cfg.GrpsServ.Host, cfg.GrpsServ.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
-//		if err != nil {
-//			log.Fatalf("did not connect: %v", err)
-//		}
-//		defer conn.Close()
-//		c := pb.NewEventServiceClient(conn)
-//		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-//		defer cancel()
-//
-//		r, err := c.Add(ctx, &pb.EventRequest{Event: &pb.Event{
-//			ID:     "2bb0d64e-8f6e-4863-b1d8-8b20018c743d",
-//			Title:  "test",
-//			UserId: "2bb0d64e-8f6e-4863-b1d8-8b20018c743f",
-//		}})
-//		require.NoError(t, err)
-//		require.Equal(t, "", r.GetError())
-//
-//		r, err = c.Update(ctx, &pb.EventRequest{Event: &pb.Event{
-//			ID:     "2bb0d64e-8f6e-4863-b1d8-8b20018c743d",
-//			Title:  "test update",
-//			UserId: "2bb0d64e-8f6e-4863-b1d8-8b20018c743f",
-//		}})
-//		require.NoError(t, err)
-//		require.Equal(t, "", r.GetError())
-//
-//		e, err := c.Get(ctx, &pb.IDRequest{ID: "2bb0d64e-8f6e-4863-b1d8-8b20018c743d"})
-//		require.NoError(t, err)
-//		require.Equal(t, "test update", e.GetTitle())
-//	})
-//}
-//
+func TestGRPCServerUpdate(t *testing.T) {
+	logg, err := logger.New("info")
+	require.NoError(t, err)
+
+	storage := memorystorage.New()
+	calendar := app.New(logg, storage)
+
+	cfg := cfg.Config{
+		GrpsServ: cfg.GrpcServerConf{
+			Host: "",
+			Port: "8083",
+		},
+	}
+
+	go runGrpc(calendar, &cfg, logg)
+
+	t.Run("update", func(t *testing.T) {
+		conn, err := grpc.Dial(net.JoinHostPort(cfg.GrpsServ.Host, cfg.GrpsServ.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
+		if err != nil {
+			log.Fatalf("did not connect: %v", err)
+		}
+		defer conn.Close()
+		c := pb.NewEventServiceClient(conn)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		r, err := c.Add(ctx, &pb.EventRequest{Event: &pb.Event{
+			ID:     "2bb0d64e-8f6e-4863-b1d8-8b20018c743d",
+			Title:  "test",
+			UserId: "2bb0d64e-8f6e-4863-b1d8-8b20018c743f",
+		}})
+		require.NoError(t, err)
+		require.Equal(t, "", r.GetError())
+
+		r, err = c.Update(ctx, &pb.EventRequest{Event: &pb.Event{
+			ID:     "2bb0d64e-8f6e-4863-b1d8-8b20018c743d",
+			Title:  "test update",
+			UserId: "2bb0d64e-8f6e-4863-b1d8-8b20018c743f",
+		}})
+		require.NoError(t, err)
+		require.Equal(t, "", r.GetError())
+
+		e, err := c.Get(ctx, &pb.IDRequest{ID: "2bb0d64e-8f6e-4863-b1d8-8b20018c743d"})
+		require.NoError(t, err)
+		require.Equal(t, "test update", e.GetTitle())
+	})
+}
+
 //func TestGRPCServerDel(t *testing.T) {
 //	logg, err := logger.New("info")
 //	require.NoError(t, err)

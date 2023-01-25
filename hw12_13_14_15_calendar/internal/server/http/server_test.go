@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"google.golang.org/grpc"
 	"io"
 	"log"
 	"net"
@@ -40,7 +41,13 @@ func runGrpc(app *app.App, cfg *cfg.Config, log *logger.Logger) {
 	}
 }
 
-func startGRPC(ctx context.Context, cfg *cfg.Config, logg *logger.Logger, a *app.App) {
+func startGRPC(t *testing.T, ctx context.Context, cfg *cfg.Config, logg *logger.Logger, a *app.App) {
+	l, err := net.Listen("tcp", ":0")
+	require.NoError(t, err)
+
+	clientOptions := []grpc.DialOption{grpc.WithInsecure()}
+	cc, err := grpc.Dial(l.Addr().String(), clientOptions...)
+
 	srv := internalgrpc.NewServer(logg, a, cfg.GrpsServ)
 
 	go func() {
