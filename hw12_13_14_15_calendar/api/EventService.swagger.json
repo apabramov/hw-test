@@ -23,7 +23,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/eventErrorResponse"
+              "$ref": "#/definitions/eventResultResponse"
             }
           },
           "default": {
@@ -55,7 +55,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/eventErrorResponse"
+              "$ref": "#/definitions/eventResultResponse"
             }
           },
           "default": {
@@ -85,7 +85,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/eventEvent"
+              "$ref": "#/definitions/eventResultResponse"
             }
           },
           "default": {
@@ -211,7 +211,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/eventErrorResponse"
+              "$ref": "#/definitions/eventResultResponse"
             }
           },
           "default": {
@@ -238,14 +238,6 @@
     }
   },
   "definitions": {
-    "eventErrorResponse": {
-      "type": "object",
-      "properties": {
-        "Error": {
-          "type": "string"
-        }
-      }
-    },
     "eventEvent": {
       "type": "object",
       "properties": {
@@ -298,6 +290,20 @@
           "items": {
             "$ref": "#/definitions/eventEvent"
           }
+        },
+        "Error": {
+          "type": "string"
+        }
+      }
+    },
+    "eventResultResponse": {
+      "type": "object",
+      "properties": {
+        "event": {
+          "$ref": "#/definitions/eventEvent"
+        },
+        "Error": {
+          "type": "string"
         }
       }
     },

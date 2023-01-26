@@ -121,7 +121,7 @@ func TestGRPCServerUpdate(t *testing.T) {
 
 		e, err := c.Get(ctx, &pb.IDRequest{ID: "2bb0d64e-8f6e-4863-b1d8-8b20018c743d"})
 		require.NoError(t, err)
-		require.Equal(t, "test update", e.GetTitle())
+		require.Equal(t, "test update", e.Event.GetTitle())
 	})
 }
 

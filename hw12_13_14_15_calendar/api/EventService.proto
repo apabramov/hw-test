@@ -10,24 +10,24 @@ import "google/api/annotations.proto";
 //import "google/api/http.proto";
 
 service EventService {
-  rpc Add(EventRequest) returns (ErrorResponse){
+  rpc Add(EventRequest) returns (ResultResponse){
     option (google.api.http) = {
       post: "/v1/event/add"
       body: "*"
     };
   }
-  rpc Update(EventRequest) returns (ErrorResponse){
+  rpc Update(EventRequest) returns (ResultResponse){
     option (google.api.http) = {
       put: "/v1/event/update"
       body: "*"
     };
   }
-  rpc Del(IDRequest) returns (ErrorResponse){
+  rpc Del(IDRequest) returns (ResultResponse){
     option (google.api.http) = {
       delete: "/v1/event/delete/{ID}"
     };
   }
-  rpc Get(IDRequest) returns (Event){
+  rpc Get(IDRequest) returns (ResultResponse){
     option (google.api.http) = {
       get: "/v1/event/get/{ID}"
     };
@@ -67,8 +67,9 @@ message EventRequest {
   Event event = 1;
 }
 
-message ErrorResponse {
-  string Error = 1;
+message ResultResponse {
+  Event event = 1;
+  string Error = 2;
 }
 
 message IDRequest {
@@ -81,4 +82,5 @@ message ListRequest {
 
 message ListResponse {
   repeated Event Events = 1;
+  string Error = 2;
 }

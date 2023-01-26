@@ -24,6 +24,11 @@ type Event struct {
 	Title string
 }
 
+type Response struct {
+	Ev    Event `json:"event,omitempty"`
+	Error string
+}
+
 type Ev struct {
 	Events []Event
 }
@@ -124,9 +129,11 @@ func TestHTTPServer(t *testing.T) {
 		defer resp.Body.Close()
 
 		require.Equal(t, http.StatusOK, resp.StatusCode)
-		body, err := io.ReadAll(resp.Body)
+
+		var res Response
+		err = json.NewDecoder(resp.Body).Decode(&res)
 		require.NoError(t, err)
-		require.Equal(t, "{\"Error\":\"\"}", string(body))
+		require.Equal(t, "Hello", res.Ev.Title)
 	})
 
 	t.Run("delete", func(t *testing.T) {
@@ -137,9 +144,10 @@ func TestHTTPServer(t *testing.T) {
 
 		defer resp.Body.Close()
 		require.Equal(t, http.StatusOK, resp.StatusCode)
-		body, err := io.ReadAll(resp.Body)
+		var res Response
+		err = json.NewDecoder(resp.Body).Decode(&res)
 		require.NoError(t, err)
-		require.Equal(t, "{\"Error\":\"\"}", string(body))
+		require.Equal(t, "", res.Error)
 	})
 
 	t.Run("update", func(t *testing.T) {
@@ -148,29 +156,31 @@ func TestHTTPServer(t *testing.T) {
 		s.Srv.ServeHTTP(w, r)
 		resp := w.Result()
 
-		body, err := io.ReadAll(resp.Body)
+		var res Response
+		err = json.NewDecoder(resp.Body).Decode(&res)
 		require.NoError(t, err)
-		require.Equal(t, "{\"Error\":\"\"}", string(body))
+
+		require.Equal(t, "Hello", res.Ev.Title)
 
 		r = httptest.NewRequest(http.MethodPut, ts.URL+"/v1/event/update", eu)
 		w = httptest.NewRecorder()
 		s.Srv.ServeHTTP(w, r)
 		resp = w.Result()
 
-		body, err = io.ReadAll(resp.Body)
+		err = json.NewDecoder(resp.Body).Decode(&res)
 		require.NoError(t, err)
-		require.Equal(t, "{\"Error\":\"\"}", string(body))
+
+		require.Equal(t, "Hello update", res.Ev.Title)
 
 		r = httptest.NewRequest(http.MethodGet, ts.URL+"/v1/event/get/2bb0d64e-8f6e-4863-b1d8-8b20018c743d", nil)
 		w = httptest.NewRecorder()
 		s.Srv.ServeHTTP(w, r)
 		resp = w.Result()
 
-		var result Event
-		err = json.NewDecoder(resp.Body).Decode(&result)
+		err = json.NewDecoder(resp.Body).Decode(&res)
 		require.NoError(t, err)
 
-		require.Equal(t, "Hello update", result.Title)
+		require.Equal(t, "Hello update", res.Ev.Title)
 	})
 
 	t.Run("list day", func(t *testing.T) {
@@ -184,7 +194,7 @@ func TestHTTPServer(t *testing.T) {
 		require.Equal(t, http.StatusOK, resp.StatusCode)
 		body, err := io.ReadAll(resp.Body)
 		require.NoError(t, err)
-		require.Equal(t, "{\"Events\":[]}", string(body))
+		require.Equal(t, "{\"Events\":[], \"Error\":\"\"}", string(body))
 	})
 
 	t.Run("list week", func(t *testing.T) {
@@ -197,7 +207,7 @@ func TestHTTPServer(t *testing.T) {
 		require.Equal(t, http.StatusOK, resp.StatusCode)
 		body, err := io.ReadAll(resp.Body)
 		require.NoError(t, err)
-		require.Equal(t, "{\"Events\":[]}", string(body))
+		require.Equal(t, "{\"Events\":[], \"Error\":\"\"}", string(body))
 	})
 
 	t.Run("list month", func(t *testing.T) {

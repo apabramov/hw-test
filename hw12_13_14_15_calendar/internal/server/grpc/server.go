@@ -74,47 +74,47 @@ func (s *Server) Stop() error {
 	return nil
 }
 
-func (s *Server) Add(ctx context.Context, r *pb.EventRequest) (*pb.ErrorResponse, error) {
+func (s *Server) Add(ctx context.Context, r *pb.EventRequest) (*pb.ResultResponse, error) {
 	se, err := s.getStorageEvent(r.GetEvent())
 	if err != nil {
-		return &pb.ErrorResponse{Error: err.Error()}, err
+		return &pb.ResultResponse{Error: err.Error()}, err
 	}
 
 	if err = s.App.AddEvent(ctx, se); err != nil {
-		return &pb.ErrorResponse{Error: err.Error()}, err
+		return &pb.ResultResponse{Error: err.Error()}, err
 	}
 
-	return &pb.ErrorResponse{}, nil
+	return &pb.ResultResponse{Event: getEvent(se)}, nil
 }
 
-func (s *Server) Update(ctx context.Context, r *pb.EventRequest) (*pb.ErrorResponse, error) {
+func (s *Server) Update(ctx context.Context, r *pb.EventRequest) (*pb.ResultResponse, error) {
 	se, err := s.getStorageEvent(r.GetEvent())
 	if err != nil {
-		return &pb.ErrorResponse{Error: err.Error()}, err
+		return &pb.ResultResponse{Error: err.Error()}, err
 	}
 
 	if err = s.App.UpdateEvent(ctx, se); err != nil {
-		return &pb.ErrorResponse{Error: err.Error()}, err
+		return &pb.ResultResponse{Error: err.Error()}, err
 	}
 
-	return &pb.ErrorResponse{}, nil
+	return &pb.ResultResponse{Event: getEvent(se)}, nil
 }
 
-func (s *Server) Del(ctx context.Context, r *pb.IDRequest) (*pb.ErrorResponse, error) {
+func (s *Server) Del(ctx context.Context, r *pb.IDRequest) (*pb.ResultResponse, error) {
 	if err := s.App.DelEvent(ctx, r.GetID()); err != nil {
-		return &pb.ErrorResponse{Error: err.Error()}, err
+		return &pb.ResultResponse{Error: err.Error()}, err
 	}
 
-	return &pb.ErrorResponse{}, nil
+	return &pb.ResultResponse{}, nil
 }
 
-func (s *Server) Get(ctx context.Context, r *pb.IDRequest) (*pb.Event, error) {
+func (s *Server) Get(ctx context.Context, r *pb.IDRequest) (*pb.ResultResponse, error) {
 	event, err := s.App.GetEvent(ctx, r.GetID())
 	if err != nil {
-		return &pb.Event{}, err
+		return &pb.ResultResponse{Error: err.Error()}, err
 	}
 
-	return getEvent(event), nil
+	return &pb.ResultResponse{Event: getEvent(event)}, nil
 }
 
 func (s *Server) ListByDay(ctx context.Context, r *pb.ListRequest) (*pb.ListResponse, error) {

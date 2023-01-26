@@ -22,10 +22,10 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type EventServiceClient interface {
-	Add(ctx context.Context, in *EventRequest, opts ...grpc.CallOption) (*ErrorResponse, error)
-	Update(ctx context.Context, in *EventRequest, opts ...grpc.CallOption) (*ErrorResponse, error)
-	Del(ctx context.Context, in *IDRequest, opts ...grpc.CallOption) (*ErrorResponse, error)
-	Get(ctx context.Context, in *IDRequest, opts ...grpc.CallOption) (*Event, error)
+	Add(ctx context.Context, in *EventRequest, opts ...grpc.CallOption) (*ResultResponse, error)
+	Update(ctx context.Context, in *EventRequest, opts ...grpc.CallOption) (*ResultResponse, error)
+	Del(ctx context.Context, in *IDRequest, opts ...grpc.CallOption) (*ResultResponse, error)
+	Get(ctx context.Context, in *IDRequest, opts ...grpc.CallOption) (*ResultResponse, error)
 	ListByDay(ctx context.Context, in *ListRequest, opts ...grpc.CallOption) (*ListResponse, error)
 	ListByWeek(ctx context.Context, in *ListRequest, opts ...grpc.CallOption) (*ListResponse, error)
 	ListByMonth(ctx context.Context, in *ListRequest, opts ...grpc.CallOption) (*ListResponse, error)
@@ -39,8 +39,8 @@ func NewEventServiceClient(cc grpc.ClientConnInterface) EventServiceClient {
 	return &eventServiceClient{cc}
 }
 
-func (c *eventServiceClient) Add(ctx context.Context, in *EventRequest, opts ...grpc.CallOption) (*ErrorResponse, error) {
-	out := new(ErrorResponse)
+func (c *eventServiceClient) Add(ctx context.Context, in *EventRequest, opts ...grpc.CallOption) (*ResultResponse, error) {
+	out := new(ResultResponse)
 	err := c.cc.Invoke(ctx, "/event.EventService/Add", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -48,8 +48,8 @@ func (c *eventServiceClient) Add(ctx context.Context, in *EventRequest, opts ...
 	return out, nil
 }
 
-func (c *eventServiceClient) Update(ctx context.Context, in *EventRequest, opts ...grpc.CallOption) (*ErrorResponse, error) {
-	out := new(ErrorResponse)
+func (c *eventServiceClient) Update(ctx context.Context, in *EventRequest, opts ...grpc.CallOption) (*ResultResponse, error) {
+	out := new(ResultResponse)
 	err := c.cc.Invoke(ctx, "/event.EventService/Update", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -57,8 +57,8 @@ func (c *eventServiceClient) Update(ctx context.Context, in *EventRequest, opts 
 	return out, nil
 }
 
-func (c *eventServiceClient) Del(ctx context.Context, in *IDRequest, opts ...grpc.CallOption) (*ErrorResponse, error) {
-	out := new(ErrorResponse)
+func (c *eventServiceClient) Del(ctx context.Context, in *IDRequest, opts ...grpc.CallOption) (*ResultResponse, error) {
+	out := new(ResultResponse)
 	err := c.cc.Invoke(ctx, "/event.EventService/Del", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -66,8 +66,8 @@ func (c *eventServiceClient) Del(ctx context.Context, in *IDRequest, opts ...grp
 	return out, nil
 }
 
-func (c *eventServiceClient) Get(ctx context.Context, in *IDRequest, opts ...grpc.CallOption) (*Event, error) {
-	out := new(Event)
+func (c *eventServiceClient) Get(ctx context.Context, in *IDRequest, opts ...grpc.CallOption) (*ResultResponse, error) {
+	out := new(ResultResponse)
 	err := c.cc.Invoke(ctx, "/event.EventService/Get", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -106,10 +106,10 @@ func (c *eventServiceClient) ListByMonth(ctx context.Context, in *ListRequest, o
 // All implementations must embed UnimplementedEventServiceServer
 // for forward compatibility
 type EventServiceServer interface {
-	Add(context.Context, *EventRequest) (*ErrorResponse, error)
-	Update(context.Context, *EventRequest) (*ErrorResponse, error)
-	Del(context.Context, *IDRequest) (*ErrorResponse, error)
-	Get(context.Context, *IDRequest) (*Event, error)
+	Add(context.Context, *EventRequest) (*ResultResponse, error)
+	Update(context.Context, *EventRequest) (*ResultResponse, error)
+	Del(context.Context, *IDRequest) (*ResultResponse, error)
+	Get(context.Context, *IDRequest) (*ResultResponse, error)
 	ListByDay(context.Context, *ListRequest) (*ListResponse, error)
 	ListByWeek(context.Context, *ListRequest) (*ListResponse, error)
 	ListByMonth(context.Context, *ListRequest) (*ListResponse, error)
@@ -120,16 +120,16 @@ type EventServiceServer interface {
 type UnimplementedEventServiceServer struct {
 }
 
-func (UnimplementedEventServiceServer) Add(context.Context, *EventRequest) (*ErrorResponse, error) {
+func (UnimplementedEventServiceServer) Add(context.Context, *EventRequest) (*ResultResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Add not implemented")
 }
-func (UnimplementedEventServiceServer) Update(context.Context, *EventRequest) (*ErrorResponse, error) {
+func (UnimplementedEventServiceServer) Update(context.Context, *EventRequest) (*ResultResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
 }
-func (UnimplementedEventServiceServer) Del(context.Context, *IDRequest) (*ErrorResponse, error) {
+func (UnimplementedEventServiceServer) Del(context.Context, *IDRequest) (*ResultResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Del not implemented")
 }
-func (UnimplementedEventServiceServer) Get(context.Context, *IDRequest) (*Event, error) {
+func (UnimplementedEventServiceServer) Get(context.Context, *IDRequest) (*ResultResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
 }
 func (UnimplementedEventServiceServer) ListByDay(context.Context, *ListRequest) (*ListResponse, error) {
