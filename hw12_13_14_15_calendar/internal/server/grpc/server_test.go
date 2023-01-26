@@ -211,7 +211,6 @@ func TestGRPCServerListByDay(t *testing.T) {
 		l, err := c.ListByDay(ctx, &p)
 		require.NoError(t, err)
 		m := l.GetEvents()
-		log.Println(m, len(m))
 		require.True(t, len(m) == 1)
 
 		require.Equal(t, ev.Title, m[0].Title)
