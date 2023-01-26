@@ -50,7 +50,7 @@ func TestUpdateStorage(t *testing.T) {
 		err := s.Update(ctx, e)
 		require.NoError(t, err)
 
-		l, err := s.ListByDay(ctx, e.Date.Add(-10*time.Second))
+		l, err := s.ListByDay(ctx, e.Date.Add(-10*time.Second), e.Date.Add(-10*time.Second).AddDate(0, 0, 1))
 		require.NoError(t, err)
 		require.True(t, l[0].Description == "update description")
 	})
@@ -73,7 +73,7 @@ func TestCountStorage(t *testing.T) {
 	err := s.Add(ctx, e)
 	require.NoError(t, err)
 	t.Run("count event", func(t *testing.T) {
-		l, err := s.ListByDay(ctx, e.Date.Add(-10*time.Second))
+		l, err := s.ListByDay(ctx, e.Date.Add(-10*time.Second), e.Date.Add(-10*time.Second).AddDate(0, 0, 1))
 		require.NoError(t, err)
 		require.Len(t, l, 1)
 	})
@@ -102,7 +102,7 @@ func TestListWeekStorage(t *testing.T) {
 			Date: time.Now().AddDate(0, 0, 1),
 		}
 		s.Add(ctx, ew)
-		l, err := s.ListByWeek(ctx, e.Date.Add(-10*time.Second))
+		l, err := s.ListByWeek(ctx, e.Date.Add(-10*time.Second), e.Date.Add(-10*time.Second).AddDate(0, 0, 7))
 		require.NoError(t, err)
 		require.Len(t, l, 2)
 	})
@@ -125,7 +125,7 @@ func TestListMonthStorage(t *testing.T) {
 	err := s.Add(ctx, e)
 	require.NoError(t, err)
 	t.Run("list month", func(t *testing.T) {
-		l, err := s.ListByMonth(ctx, e.Date.Add(-10*time.Second))
+		l, err := s.ListByMonth(ctx, e.Date.Add(-10*time.Second), e.Date.Add(-10*time.Second).AddDate(0, 1, 0))
 		require.NoError(t, err)
 		require.Len(t, l, 1)
 	})
