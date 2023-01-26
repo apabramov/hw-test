@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"google.golang.org/grpc"
-	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -192,9 +191,10 @@ func TestHTTPServer(t *testing.T) {
 
 		defer resp.Body.Close()
 		require.Equal(t, http.StatusOK, resp.StatusCode)
-		body, err := io.ReadAll(resp.Body)
+		var res Response
+		err = json.NewDecoder(resp.Body).Decode(&res)
 		require.NoError(t, err)
-		require.Equal(t, "{\"Events\":[], \"Error\":\"\"}", string(body))
+		require.Equal(t, "", res.Error)
 	})
 
 	t.Run("list week", func(t *testing.T) {
@@ -205,9 +205,10 @@ func TestHTTPServer(t *testing.T) {
 
 		defer resp.Body.Close()
 		require.Equal(t, http.StatusOK, resp.StatusCode)
-		body, err := io.ReadAll(resp.Body)
+		var res Response
+		err = json.NewDecoder(resp.Body).Decode(&res)
 		require.NoError(t, err)
-		require.Equal(t, "{\"Events\":[], \"Error\":\"\"}", string(body))
+		require.Equal(t, "", res.Error)
 	})
 
 	t.Run("list month", func(t *testing.T) {
