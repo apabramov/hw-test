@@ -35,9 +35,9 @@ type Application interface {
 	UpdateEvent(ctx context.Context, event storage.Event) error
 	DelEvent(ctx context.Context, id string) error
 	GetEvent(ctx context.Context, id string) (storage.Event, error)
-	ListByDayEvents(ctx context.Context, t time.Time) ([]storage.Event, error)
-	ListByWeekEvents(ctx context.Context, t time.Time) ([]storage.Event, error)
-	ListByMonthEvents(ctx context.Context, t time.Time) ([]storage.Event, error)
+	ListByDayEvents(ctx context.Context, bg time.Time, fn time.Time) ([]storage.Event, error)
+	ListByWeekEvents(ctx context.Context, bg time.Time, fn time.Time) ([]storage.Event, error)
+	ListByMonthEvents(ctx context.Context, bg time.Time, fn time.Time) ([]storage.Event, error)
 }
 
 func NewServer(log Logger, app Application, cfg config.GrpcServerConf) *Server {
@@ -120,7 +120,7 @@ func (s *Server) Get(ctx context.Context, r *pb.IDRequest) (*pb.ResultResponse, 
 func (s *Server) ListByDay(ctx context.Context, r *pb.ListRequest) (*pb.ListResponse, error) {
 	t := r.GetDate().AsTime()
 
-	events, err := s.App.ListByDayEvents(ctx, t)
+	events, err := s.App.ListByDayEvents(ctx, t, t.AddDate(0, 0, 1))
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +130,7 @@ func (s *Server) ListByDay(ctx context.Context, r *pb.ListRequest) (*pb.ListResp
 func (s *Server) ListByWeek(ctx context.Context, r *pb.ListRequest) (*pb.ListResponse, error) {
 	t := r.GetDate().AsTime()
 
-	events, err := s.App.ListByWeekEvents(ctx, t)
+	events, err := s.App.ListByWeekEvents(ctx, t, t.AddDate(0, 0, 7))
 	if err != nil {
 		return nil, err
 	}
@@ -140,7 +140,7 @@ func (s *Server) ListByWeek(ctx context.Context, r *pb.ListRequest) (*pb.ListRes
 func (s *Server) ListByMonth(ctx context.Context, r *pb.ListRequest) (*pb.ListResponse, error) {
 	t := r.GetDate().AsTime()
 
-	events, err := s.App.ListByMonthEvents(ctx, t)
+	events, err := s.App.ListByMonthEvents(ctx, t, t.AddDate(0, 1, 0))
 	if err != nil {
 		return nil, err
 	}
@@ -182,7 +182,7 @@ func getEvent(event storage.Event) *pb.Event {
 }
 
 func getListResponse(events []storage.Event) *pb.ListResponse {
-	pbEvents := make([]*pb.Event, 0)
+	pbEvents := make([]*pb.Event, 0, len(events))
 
 	for _, event := range events {
 		pbEvents = append(pbEvents, getEvent(event))

@@ -68,14 +68,14 @@ func (s *Storage) List(ctx context.Context, bg time.Time, fn time.Time) ([]stora
 	return ev, nil
 }
 
-func (s *Storage) ListByDay(ctx context.Context, dt time.Time) ([]storage.Event, error) {
-	return s.List(ctx, dt, dt.AddDate(0, 0, 1))
+func (s *Storage) ListByDay(ctx context.Context, bg time.Time, fn time.Time) ([]storage.Event, error) {
+	return s.List(ctx, bg, fn)
 }
 
-func (s *Storage) ListByWeek(ctx context.Context, dt time.Time) ([]storage.Event, error) {
-	return s.List(ctx, dt, dt.AddDate(0, 0, 7))
+func (s *Storage) ListByWeek(ctx context.Context, bg time.Time, fn time.Time) ([]storage.Event, error) {
+	return s.List(ctx, bg, fn)
 }
 
-func (s *Storage) ListByMonth(ctx context.Context, dt time.Time) ([]storage.Event, error) {
-	return s.List(ctx, dt, dt.AddDate(0, 1, 0))
+func (s *Storage) ListByMonth(ctx context.Context, bg time.Time, fn time.Time) ([]storage.Event, error) {
+	return s.List(ctx, bg, fn)
 }

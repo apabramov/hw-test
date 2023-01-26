@@ -3,17 +3,14 @@ package internalhttp
 import (
 	"context"
 	"fmt"
-	"net"
-	"net/http"
-	"time"
-
 	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/config"
 	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/server/pb"
-	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/storage"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"net"
+	"net/http"
 )
 
 type Server struct {
@@ -28,16 +25,6 @@ type Logger interface {
 	Warn(msg string)
 	Debug(msg string)
 	Error(msg string)
-}
-
-type Application interface {
-	AddEvent(ctx context.Context, event storage.Event) error
-	UpdateEvent(ctx context.Context, event storage.Event) error
-	DelEvent(ctx context.Context, event storage.Event) error
-	GetEvent(ctx context.Context, event storage.Event) (storage.Event, error)
-	ListByDayEvents(ctx context.Context, t time.Time) ([]storage.Event, error)
-	ListByWeekEvents(ctx context.Context, t time.Time) ([]storage.Event, error)
-	ListByMonthEvents(ctx context.Context, t time.Time) ([]storage.Event, error)
 }
 
 func NewServer(ctx context.Context, log Logger, cfg *config.Config) *Server {
