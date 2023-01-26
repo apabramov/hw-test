@@ -135,7 +135,7 @@ func TestGRPCServerDel(t *testing.T) {
 	cfg := cfg.Config{
 		GrpsServ: cfg.GrpcServerConf{
 			Host: "",
-			Port: "9002",
+			Port: "50055",
 		},
 	}
 
@@ -178,7 +178,7 @@ func TestGRPCServerListByDay(t *testing.T) {
 	cfg := cfg.Config{
 		GrpsServ: cfg.GrpcServerConf{
 			Host: "",
-			Port: "9003",
+			Port: "50056",
 		},
 	}
 
@@ -225,7 +225,7 @@ func TestGRPCServerListByWeek(t *testing.T) {
 	cfg := cfg.Config{
 		GrpsServ: cfg.GrpcServerConf{
 			Host: "",
-			Port: "9004",
+			Port: "50057",
 		},
 	}
 
@@ -272,7 +272,7 @@ func TestGRPCServerListByMonth(t *testing.T) {
 	cfg := cfg.Config{
 		GrpsServ: cfg.GrpcServerConf{
 			Host: "",
-			Port: "9005",
+			Port: "50058",
 		},
 	}
 
