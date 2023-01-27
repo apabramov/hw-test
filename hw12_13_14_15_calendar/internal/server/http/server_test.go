@@ -118,11 +118,11 @@ func TestHTTPServer(t *testing.T) {
   }
 }`)
 
-	ts := httptest.NewServer(s.Srv)
+	ts := httptest.NewServer(s.Mux)
 	t.Run("add", func(t *testing.T) {
 		r := httptest.NewRequest(http.MethodPost, ts.URL+"/v1/event/add", bytes.NewBufferString(event))
 		w := httptest.NewRecorder()
-		s.Srv.ServeHTTP(w, r)
+		s.Mux.ServeHTTP(w, r)
 
 		resp := w.Result()
 		defer resp.Body.Close()
@@ -138,7 +138,7 @@ func TestHTTPServer(t *testing.T) {
 	t.Run("delete", func(t *testing.T) {
 		r := httptest.NewRequest(http.MethodDelete, ts.URL+"/v1/event/delete/2bb0d64e-8f6e-4863-b1d8-8b20018c743d", nil)
 		w := httptest.NewRecorder()
-		s.Srv.ServeHTTP(w, r)
+		s.Mux.ServeHTTP(w, r)
 		resp := w.Result()
 
 		defer resp.Body.Close()
@@ -152,7 +152,7 @@ func TestHTTPServer(t *testing.T) {
 	t.Run("update", func(t *testing.T) {
 		r := httptest.NewRequest(http.MethodPost, ts.URL+"/v1/event/add", bytes.NewBufferString(event))
 		w := httptest.NewRecorder()
-		s.Srv.ServeHTTP(w, r)
+		s.Mux.ServeHTTP(w, r)
 		resp := w.Result()
 
 		var res Response
@@ -163,7 +163,7 @@ func TestHTTPServer(t *testing.T) {
 
 		r = httptest.NewRequest(http.MethodPut, ts.URL+"/v1/event/update", eu)
 		w = httptest.NewRecorder()
-		s.Srv.ServeHTTP(w, r)
+		s.Mux.ServeHTTP(w, r)
 		resp = w.Result()
 
 		err = json.NewDecoder(resp.Body).Decode(&res)
@@ -173,7 +173,7 @@ func TestHTTPServer(t *testing.T) {
 
 		r = httptest.NewRequest(http.MethodGet, ts.URL+"/v1/event/get/2bb0d64e-8f6e-4863-b1d8-8b20018c743d", nil)
 		w = httptest.NewRecorder()
-		s.Srv.ServeHTTP(w, r)
+		s.Mux.ServeHTTP(w, r)
 		resp = w.Result()
 
 		err = json.NewDecoder(resp.Body).Decode(&res)
@@ -185,7 +185,7 @@ func TestHTTPServer(t *testing.T) {
 	t.Run("list day", func(t *testing.T) {
 		r := httptest.NewRequest(http.MethodPost, ts.URL+"/v1/event/list/day", bytes.NewBufferString(`{"Date":"2023-01-01T16:00:00Z"}`))
 		w := httptest.NewRecorder()
-		s.Srv.ServeHTTP(w, r)
+		s.Mux.ServeHTTP(w, r)
 
 		resp := w.Result()
 
@@ -200,7 +200,7 @@ func TestHTTPServer(t *testing.T) {
 	t.Run("list week", func(t *testing.T) {
 		r := httptest.NewRequest(http.MethodPost, ts.URL+"/v1/event/list/week", bytes.NewBufferString(`{"Date":"2023-01-01T16:00:00Z"}`))
 		w := httptest.NewRecorder()
-		s.Srv.ServeHTTP(w, r)
+		s.Mux.ServeHTTP(w, r)
 		resp := w.Result()
 
 		defer resp.Body.Close()
@@ -214,7 +214,7 @@ func TestHTTPServer(t *testing.T) {
 	t.Run("list month", func(t *testing.T) {
 		r := httptest.NewRequest(http.MethodPost, ts.URL+"/v1/event/list/month", bytes.NewBufferString(`{"Date":"2023-01-01T00:00:00Z"}`))
 		w := httptest.NewRecorder()
-		s.Srv.ServeHTTP(w, r)
+		s.Mux.ServeHTTP(w, r)
 		resp := w.Result()
 
 		defer resp.Body.Close()

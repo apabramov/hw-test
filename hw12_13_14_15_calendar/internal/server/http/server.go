@@ -17,7 +17,8 @@ type Server struct {
 	Host string
 	Port string
 	Log  Logger
-	Srv  *runtime.ServeMux
+	Mux  *runtime.ServeMux
+	Srv  *http.Server
 }
 
 type Logger interface {
@@ -33,16 +34,22 @@ func NewServer(ctx context.Context, log Logger, cfg *config.Config) *Server {
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 	err := pb.RegisterEventServiceHandlerFromEndpoint(ctx, mux, net.JoinHostPort(cfg.GrpsServ.Host, cfg.GrpsServ.Port), opts)
 
+	srv := &http.Server{
+		Addr:    net.JoinHostPort(cfg.GrpsServ.Host, cfg.GrpsServ.Port),
+		Handler: mux,
+	}
+
 	if err != nil {
 		log.Info(err.Error())
 	}
-	s.Srv = mux
+	s.Srv = srv
+	s.Mux = mux
 	return s
 }
 
 func (s *Server) Start(ctx context.Context) error {
 	s.Log.Info(fmt.Sprintf("HTTP starting: %v:%v", s.Host, s.Port))
-	if err := http.ListenAndServe(net.JoinHostPort(s.Host, s.Port), s.Srv); err != nil {
+	if err := http.ListenAndServe(net.JoinHostPort(s.Host, s.Port), s.Mux); err != nil {
 		if !errors.Is(err, http.ErrServerClosed) {
 			return err
 		}
@@ -53,5 +60,6 @@ func (s *Server) Start(ctx context.Context) error {
 
 func (s *Server) Stop(ctx context.Context) error {
 	s.Log.Info(fmt.Sprintf("HTTP stopping:  %v:%v", s.Host, s.Port))
+	s.Srv.Shutdown(ctx)
 	return nil
 }
