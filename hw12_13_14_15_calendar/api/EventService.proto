@@ -77,7 +77,8 @@ message IDRequest {
 }
 
 message ListRequest {
-  google.protobuf.Timestamp Date = 1;
+  google.protobuf.Timestamp bg = 1;
+  google.protobuf.Timestamp fn = 2;
 }
 
 message ListResponse {

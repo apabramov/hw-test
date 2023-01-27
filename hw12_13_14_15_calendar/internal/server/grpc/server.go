@@ -118,9 +118,10 @@ func (s *Server) Get(ctx context.Context, r *pb.IDRequest) (*pb.ResultResponse, 
 }
 
 func (s *Server) ListByDay(ctx context.Context, r *pb.ListRequest) (*pb.ListResponse, error) {
-	t := r.GetDate().AsTime()
+	bg := r.GetBg().AsTime()
+	fn := r.GetFn().AsTime()
 
-	events, err := s.App.ListByDayEvents(ctx, t, t.AddDate(0, 0, 1))
+	events, err := s.App.ListByDayEvents(ctx, bg, fn)
 	if err != nil {
 		return nil, err
 	}
@@ -128,9 +129,10 @@ func (s *Server) ListByDay(ctx context.Context, r *pb.ListRequest) (*pb.ListResp
 }
 
 func (s *Server) ListByWeek(ctx context.Context, r *pb.ListRequest) (*pb.ListResponse, error) {
-	t := r.GetDate().AsTime()
+	bg := r.GetBg().AsTime()
+	fn := r.GetFn().AsTime()
 
-	events, err := s.App.ListByWeekEvents(ctx, t, t.AddDate(0, 0, 7))
+	events, err := s.App.ListByWeekEvents(ctx, bg, fn)
 	if err != nil {
 		return nil, err
 	}
@@ -138,9 +140,10 @@ func (s *Server) ListByWeek(ctx context.Context, r *pb.ListRequest) (*pb.ListRes
 }
 
 func (s *Server) ListByMonth(ctx context.Context, r *pb.ListRequest) (*pb.ListResponse, error) {
-	t := r.GetDate().AsTime()
+	bg := r.GetBg().AsTime()
+	fn := r.GetFn().AsTime()
 
-	events, err := s.App.ListByMonthEvents(ctx, t, t.AddDate(0, 1, 0))
+	events, err := s.App.ListByMonthEvents(ctx, bg, fn)
 	if err != nil {
 		return nil, err
 	}

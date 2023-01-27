@@ -206,7 +206,7 @@ func TestGRPCServerListByDay(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, "", r.GetError())
 
-		p := pb.ListRequest{Date: timestamppb.New(dt)}
+		p := pb.ListRequest{Bg: timestamppb.New(dt), Fn: timestamppb.New(dt.AddDate(0, 0, 1))}
 
 		l, err := c.ListByDay(ctx, &p)
 		require.NoError(t, err)
@@ -255,7 +255,7 @@ func TestGRPCServerListByWeek(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, "", r.GetError())
 
-		p := pb.ListRequest{Date: timestamppb.New(dt)}
+		p := pb.ListRequest{Bg: timestamppb.New(dt), Fn: timestamppb.New(dt.AddDate(0, 0, 1))}
 
 		l, err := c.ListByWeek(ctx, &p)
 		require.NoError(t, err)
@@ -302,7 +302,7 @@ func TestGRPCServerListByMonth(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, "", r.GetError())
 
-		p := pb.ListRequest{Date: timestamppb.New(dt)}
+		p := pb.ListRequest{Bg: timestamppb.New(dt), Fn: timestamppb.New(dt.AddDate(0, 0, 1))}
 
 		l, err := c.ListByMonth(ctx, &p)
 		require.NoError(t, err)

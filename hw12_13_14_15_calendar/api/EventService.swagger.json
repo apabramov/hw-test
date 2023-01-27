@@ -276,7 +276,11 @@
     "eventListRequest": {
       "type": "object",
       "properties": {
-        "Date": {
+        "bg": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "fn": {
           "type": "string",
           "format": "date-time"
         }
