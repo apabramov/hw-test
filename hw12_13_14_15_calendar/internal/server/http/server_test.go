@@ -32,42 +32,31 @@ type Ev struct {
 	Events []Event
 }
 
-func startGRPC(t *testing.T, ctx context.Context, cfg *cfg.Config, logg *logger.Logger, a *app.App) {
+func start(t *testing.T, ctx context.Context, cfg *cfg.Config, logg *logger.Logger, a *app.App) *Server {
 	l, err := net.Listen("tcp", net.JoinHostPort(cfg.GrpsServ.Host, cfg.GrpsServ.Port))
 	require.NoError(t, err)
 
 	clientOptions := []grpc.DialOption{grpc.WithInsecure()}
 	_, err = grpc.Dial(l.Addr().String(), clientOptions...)
 
-	srv := internalgrpc.NewServer(logg, a, cfg.GrpsServ)
+	g := internalgrpc.NewServer(logg, a, cfg.GrpsServ)
+	h, err := NewServer(ctx, logg, cfg)
+	require.NoError(t, err)
 
 	go func() {
-		srv.Srv.Serve(l)
+		err = g.Srv.Serve(l)
+		require.NoError(t, err)
+		err = h.Start(ctx)
+		require.NoError(t, err)
 	}()
 
 	go func() {
 		<-ctx.Done()
-		srv.Stop()
-	}()
-}
-
-func startHTTP(ctx context.Context, config *cfg.Config, logg *logger.Logger) *Server {
-	srv := NewServer(ctx, logg, config)
-
-	go func() {
-		if err := srv.Start(ctx); err != nil {
-			logg.Error("failed to start http server: " + err.Error())
-		}
+		g.Stop()
+		h.Stop(ctx)
 	}()
 
-	go func() {
-		<-ctx.Done()
-		if err := srv.Stop(ctx); err != nil {
-			logg.Error("failed to stop http server: " + err.Error())
-		}
-	}()
-
-	return srv
+	return h
 }
 
 func TestHTTPServer(t *testing.T) {
@@ -91,8 +80,7 @@ func TestHTTPServer(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 	defer cancel()
 
-	s := startHTTP(ctx, &cfg, logg)
-	startGRPC(t, ctx, &cfg, logg, calendar)
+	s := start(t, ctx, &cfg, logg, calendar)
 
 	event := `{
   "event" : {
@@ -118,11 +106,11 @@ func TestHTTPServer(t *testing.T) {
   }
 }`)
 
-	ts := httptest.NewServer(s.Mux)
+	ts := httptest.NewServer(s.Srv.Handler)
 	t.Run("add", func(t *testing.T) {
 		r := httptest.NewRequest(http.MethodPost, ts.URL+"/v1/event/add", bytes.NewBufferString(event))
 		w := httptest.NewRecorder()
-		s.Mux.ServeHTTP(w, r)
+		s.Srv.Handler.ServeHTTP(w, r)
 
 		resp := w.Result()
 		defer resp.Body.Close()
@@ -138,7 +126,7 @@ func TestHTTPServer(t *testing.T) {
 	t.Run("delete", func(t *testing.T) {
 		r := httptest.NewRequest(http.MethodDelete, ts.URL+"/v1/event/delete/2bb0d64e-8f6e-4863-b1d8-8b20018c743d", nil)
 		w := httptest.NewRecorder()
-		s.Mux.ServeHTTP(w, r)
+		s.Srv.Handler.ServeHTTP(w, r)
 		resp := w.Result()
 
 		defer resp.Body.Close()
@@ -152,7 +140,7 @@ func TestHTTPServer(t *testing.T) {
 	t.Run("update", func(t *testing.T) {
 		r := httptest.NewRequest(http.MethodPost, ts.URL+"/v1/event/add", bytes.NewBufferString(event))
 		w := httptest.NewRecorder()
-		s.Mux.ServeHTTP(w, r)
+		s.Srv.Handler.ServeHTTP(w, r)
 		resp := w.Result()
 
 		var res Response
@@ -163,7 +151,7 @@ func TestHTTPServer(t *testing.T) {
 
 		r = httptest.NewRequest(http.MethodPut, ts.URL+"/v1/event/update", eu)
 		w = httptest.NewRecorder()
-		s.Mux.ServeHTTP(w, r)
+		s.Srv.Handler.ServeHTTP(w, r)
 		resp = w.Result()
 
 		err = json.NewDecoder(resp.Body).Decode(&res)
@@ -173,7 +161,7 @@ func TestHTTPServer(t *testing.T) {
 
 		r = httptest.NewRequest(http.MethodGet, ts.URL+"/v1/event/get/2bb0d64e-8f6e-4863-b1d8-8b20018c743d", nil)
 		w = httptest.NewRecorder()
-		s.Mux.ServeHTTP(w, r)
+		s.Srv.Handler.ServeHTTP(w, r)
 		resp = w.Result()
 
 		err = json.NewDecoder(resp.Body).Decode(&res)
@@ -185,7 +173,7 @@ func TestHTTPServer(t *testing.T) {
 	t.Run("list day", func(t *testing.T) {
 		r := httptest.NewRequest(http.MethodPost, ts.URL+"/v1/event/list/day", bytes.NewBufferString(`{"Date":"2023-01-01T16:00:00Z"}`))
 		w := httptest.NewRecorder()
-		s.Mux.ServeHTTP(w, r)
+		s.Srv.Handler.ServeHTTP(w, r)
 
 		resp := w.Result()
 
@@ -200,7 +188,7 @@ func TestHTTPServer(t *testing.T) {
 	t.Run("list week", func(t *testing.T) {
 		r := httptest.NewRequest(http.MethodPost, ts.URL+"/v1/event/list/week", bytes.NewBufferString(`{"Date":"2023-01-01T16:00:00Z"}`))
 		w := httptest.NewRecorder()
-		s.Mux.ServeHTTP(w, r)
+		s.Srv.Handler.ServeHTTP(w, r)
 		resp := w.Result()
 
 		defer resp.Body.Close()
@@ -214,7 +202,7 @@ func TestHTTPServer(t *testing.T) {
 	t.Run("list month", func(t *testing.T) {
 		r := httptest.NewRequest(http.MethodPost, ts.URL+"/v1/event/list/month", bytes.NewBufferString(`{"bg":"2023-01-01T00:00:00Z","fn":"2023-02-01T00:00:00Z"}`))
 		w := httptest.NewRecorder()
-		s.Mux.ServeHTTP(w, r)
+		s.Srv.Handler.ServeHTTP(w, r)
 		resp := w.Result()
 
 		defer resp.Body.Close()

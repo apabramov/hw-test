@@ -46,35 +46,38 @@ func main() {
 	defer cancel()
 
 	logg.Info("calendar is running...")
-	startHTTP(ctx, &config, logg)
-	startGRPC(ctx, &config, logg, calendar)
+	start(ctx, &config, logg, calendar)
 }
 
-func startGRPC(ctx context.Context, cfg *cfg.Config, logg *logger.Logger, a *app.App) {
-	srv := internalgrpc.NewServer(logg, a, cfg.GrpsServ)
+func start(ctx context.Context, cfg *cfg.Config, logg *logger.Logger, a *app.App) {
+	g := internalgrpc.NewServer(logg, a, cfg.GrpsServ)
+	h, err := internalhttp.NewServer(ctx, logg, cfg)
+
+	if err != nil {
+		logg.Info(err.Error())
+	}
 
 	go func() {
 		<-ctx.Done()
-		srv.Stop()
+		if err := g.Stop(); err != nil {
+			logg.Error("failed to stop grpc server: " + err.Error())
+		}
+		if h != nil {
+			if err := h.Stop(ctx); err != nil {
+				logg.Error("failed to stop http server: " + err.Error())
+			}
+		}
 	}()
-	if err := srv.Start(); err != nil {
+
+	if h != nil {
+		go func() {
+			if err := h.Start(ctx); err != nil {
+				logg.Error("failed to start http server: " + err.Error())
+			}
+		}()
+	}
+
+	if err := g.Start(); err != nil {
 		logg.Error("failed to start grpc server: " + err.Error())
 	}
-}
-
-func startHTTP(ctx context.Context, config *cfg.Config, logg *logger.Logger) {
-	srv := internalhttp.NewServer(ctx, logg, config)
-
-	go func() {
-		if err := srv.Start(ctx); err != nil {
-			logg.Error("failed to start http server: " + err.Error())
-		}
-	}()
-
-	go func() {
-		<-ctx.Done()
-		if err := srv.Stop(ctx); err != nil {
-			logg.Error("failed to stop http server: " + err.Error())
-		}
-	}()
 }

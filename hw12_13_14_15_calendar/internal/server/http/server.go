@@ -17,7 +17,6 @@ type Server struct {
 	Host string
 	Port string
 	Log  Logger
-	Mux  *runtime.ServeMux
 	Srv  *http.Server
 }
 
@@ -28,28 +27,26 @@ type Logger interface {
 	Error(msg string)
 }
 
-func NewServer(ctx context.Context, log Logger, cfg *config.Config) *Server {
+func NewServer(ctx context.Context, log Logger, cfg *config.Config) (*Server, error) {
 	s := &Server{Log: log, Host: cfg.HttpServ.Host, Port: cfg.HttpServ.Port}
 	mux := runtime.NewServeMux()
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 	err := pb.RegisterEventServiceHandlerFromEndpoint(ctx, mux, net.JoinHostPort(cfg.GrpsServ.Host, cfg.GrpsServ.Port), opts)
-
+	if err != nil {
+		return nil, err
+	}
 	srv := &http.Server{
-		Addr:    net.JoinHostPort(cfg.GrpsServ.Host, cfg.GrpsServ.Port),
+		Addr:    net.JoinHostPort(cfg.HttpServ.Host, cfg.HttpServ.Port),
 		Handler: mux,
 	}
-
-	if err != nil {
-		log.Info(err.Error())
-	}
 	s.Srv = srv
-	s.Mux = mux
-	return s
+	return s, nil
 }
 
 func (s *Server) Start(ctx context.Context) error {
 	s.Log.Info(fmt.Sprintf("HTTP starting: %v:%v", s.Host, s.Port))
-	if err := http.ListenAndServe(net.JoinHostPort(s.Host, s.Port), s.Mux); err != nil {
+
+	if err := s.Srv.ListenAndServe(); err != nil {
 		if !errors.Is(err, http.ErrServerClosed) {
 			return err
 		}
