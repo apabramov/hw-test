@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/sanyokbig/pqinterval"
 )
 
 var (
@@ -21,4 +22,14 @@ type Event struct {
 	Description string
 	UserId      uuid.UUID
 	Notify      time.Duration
+}
+
+type EventPq struct {
+	ID          uuid.UUID
+	Title       string
+	Date        time.Time
+	Duration    pqinterval.Interval
+	Description string
+	UserId      uuid.UUID
+	Notify      pqinterval.Interval
 }

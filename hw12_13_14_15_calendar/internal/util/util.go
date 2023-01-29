@@ -1,7 +1,9 @@
 package util
 
 import (
+	"context"
 	"fmt"
+
 	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/app"
 	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/config"
 	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/logger"
@@ -16,6 +18,11 @@ func NewStorage(log *logger.Logger, cfg config.StorageConf) app.Storage {
 		st = memorystorage.New()
 	case "sql":
 		st = sqlstorage.New(log, cfg)
+		err := st.Connect(context.Background())
+		if err != nil {
+			log.Info(fmt.Sprintf("NewStorage - %s", err.Error()))
+			return nil
+		}
 	default:
 		log.Error(fmt.Sprintf("storage type not found - %s", cfg.Type))
 	}

@@ -3,17 +3,16 @@ package main
 import (
 	"context"
 	"flag"
-	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/util"
 	"log"
-	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/app"
 	cfg "github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/config"
 	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/logger"
+	internalgrpc "github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/server/grpc"
 	internalhttp "github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/server/http"
+	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/util"
 )
 
 var configFile string
@@ -42,28 +41,40 @@ func main() {
 	storage := util.NewStorage(logg, config.Storage)
 	calendar := app.New(logg, storage)
 
-	server := internalhttp.NewServer(logg, calendar, config.Servers)
-
 	ctx, cancel := signal.NotifyContext(context.Background(),
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	defer cancel()
 
+	logg.Info("calendar is running...")
+	start(ctx, &config, logg, calendar)
+}
+
+func start(ctx context.Context, cfg *cfg.Config, logg *logger.Logger, a *app.App) {
+	g := internalgrpc.NewServer(logg, a, cfg.GrpsServ)
+	h, err := internalhttp.NewServer(ctx, logg, cfg)
+
+	if err != nil {
+		logg.Info(err.Error())
+		return
+	}
+
 	go func() {
 		<-ctx.Done()
-
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
-		defer cancel()
-
-		if err := server.Stop(ctx); err != nil {
+		if err := g.Stop(); err != nil {
+			logg.Error("failed to stop grpc server: " + err.Error())
+		}
+		if err := h.Stop(ctx); err != nil {
 			logg.Error("failed to stop http server: " + err.Error())
 		}
 	}()
 
-	logg.Info("calendar is running...")
+	go func() {
+		if err := h.Start(ctx); err != nil {
+			logg.Error("failed to start http server: " + err.Error())
+		}
+	}()
 
-	if err := server.Start(ctx); err != nil {
-		logg.Error("failed to start http server: " + err.Error())
-		cancel()
-		os.Exit(1) //nolint:gocritic
+	if err := g.Start(); err != nil {
+		logg.Error("failed to start grpc server: " + err.Error())
 	}
 }

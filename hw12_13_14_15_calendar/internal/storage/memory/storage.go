@@ -18,6 +18,10 @@ func New() *Storage {
 	return &Storage{events: make(map[uuid.UUID]storage.Event)}
 }
 
+func (s *Storage) Connect(ctx context.Context) error {
+	return nil
+}
+
 func (s *Storage) Add(ctx context.Context, e storage.Event) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -35,14 +39,23 @@ func (s *Storage) Update(ctx context.Context, e storage.Event) error {
 	return nil
 }
 
-func (s *Storage) Del(ctx context.Context, e storage.Event) error {
+func (s *Storage) Del(ctx context.Context, id string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if _, ok := s.events[e.ID]; !ok {
+	ud := uuid.MustParse(id)
+	if _, ok := s.events[ud]; !ok {
 		return storage.ErrNotExists
 	}
-	delete(s.events, e.ID)
+	delete(s.events, ud)
 	return nil
+}
+
+func (s *Storage) Get(ctx context.Context, id string) (storage.Event, error) {
+	ud := uuid.MustParse(id)
+	if _, ok := s.events[ud]; !ok {
+		return storage.Event{}, storage.ErrNotExists
+	}
+	return s.events[ud], nil
 }
 
 func (s *Storage) List(ctx context.Context, bg time.Time, fn time.Time) ([]storage.Event, error) {
@@ -55,14 +68,14 @@ func (s *Storage) List(ctx context.Context, bg time.Time, fn time.Time) ([]stora
 	return ev, nil
 }
 
-func (s *Storage) ListByDay(ctx context.Context, dt time.Time) ([]storage.Event, error) {
-	return s.List(ctx, dt, dt.AddDate(0, 0, 1))
+func (s *Storage) ListByDay(ctx context.Context, bg time.Time, fn time.Time) ([]storage.Event, error) {
+	return s.List(ctx, bg, fn)
 }
 
-func (s *Storage) ListByWeek(ctx context.Context, dt time.Time) ([]storage.Event, error) {
-	return s.List(ctx, dt, dt.AddDate(0, 0, 7))
+func (s *Storage) ListByWeek(ctx context.Context, bg time.Time, fn time.Time) ([]storage.Event, error) {
+	return s.List(ctx, bg, fn)
 }
 
-func (s *Storage) ListByMonth(ctx context.Context, dt time.Time) ([]storage.Event, error) {
-	return s.List(ctx, dt, dt.AddDate(0, 1, 0))
+func (s *Storage) ListByMonth(ctx context.Context, bg time.Time, fn time.Time) ([]storage.Event, error) {
+	return s.List(ctx, bg, fn)
 }
