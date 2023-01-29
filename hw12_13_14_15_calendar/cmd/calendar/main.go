@@ -55,6 +55,7 @@ func start(ctx context.Context, cfg *cfg.Config, logg *logger.Logger, a *app.App
 
 	if err != nil {
 		logg.Info(err.Error())
+		return
 	}
 
 	go func() {
@@ -62,20 +63,16 @@ func start(ctx context.Context, cfg *cfg.Config, logg *logger.Logger, a *app.App
 		if err := g.Stop(); err != nil {
 			logg.Error("failed to stop grpc server: " + err.Error())
 		}
-		if h != nil {
-			if err := h.Stop(ctx); err != nil {
-				logg.Error("failed to stop http server: " + err.Error())
-			}
+		if err := h.Stop(ctx); err != nil {
+			logg.Error("failed to stop http server: " + err.Error())
 		}
 	}()
 
-	if h != nil {
-		go func() {
-			if err := h.Start(ctx); err != nil {
-				logg.Error("failed to start http server: " + err.Error())
-			}
-		}()
-	}
+	go func() {
+		if err := h.Start(ctx); err != nil {
+			logg.Error("failed to start http server: " + err.Error())
+		}
+	}()
 
 	if err := g.Start(); err != nil {
 		logg.Error("failed to start grpc server: " + err.Error())

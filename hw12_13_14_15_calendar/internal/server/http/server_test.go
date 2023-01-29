@@ -38,6 +38,7 @@ func start(t *testing.T, ctx context.Context, cfg *cfg.Config, logg *logger.Logg
 
 	clientOptions := []grpc.DialOption{grpc.WithInsecure()}
 	_, err = grpc.Dial(l.Addr().String(), clientOptions...)
+	require.NoError(t, err)
 
 	g := internalgrpc.NewServer(logg, a, cfg.GrpsServ)
 	h, err := NewServer(ctx, logg, cfg)
