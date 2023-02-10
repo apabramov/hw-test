@@ -4,12 +4,13 @@ import (
 	"context"
 	"time"
 
-	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/config"
-	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/logger"
-	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/storage"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/pkg/errors"
+
+	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/config"
+	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/logger"
+	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/storage"
 )
 
 type Storage struct {
@@ -159,4 +160,18 @@ func convertEvent(events []storage.EventPq) ([]storage.Event, error) {
 		})
 	}
 	return ev, nil
+}
+
+func (s *Storage) DeleteOutDate(ctx context.Context, t time.Time) error {
+	_, err := s.DB.ExecContext(ctx, "delete from events where date_trunc('minute', date) < $1", t)
+	return err
+}
+
+func (s *Storage) ListNotify(ctx context.Context, t time.Time) ([]storage.Event, error) {
+	var ev []storage.EventPq
+	err := s.DB.Select(&ev, "select * from events e where e.date+e.duration between $1 and $2", t, t.Add(time.Second*60))
+	if err != nil {
+		return nil, err
+	}
+	return convertEvent(ev)
 }

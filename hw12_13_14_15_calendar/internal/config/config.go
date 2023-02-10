@@ -15,7 +15,6 @@ type Config struct {
 
 type LoggerConf struct {
 	Level string
-	// TODO
 }
 
 type HttpServerConf struct {
@@ -33,17 +32,19 @@ type StorageConf struct {
 	Dsn  string
 }
 
-func NewConfig(cfg string) (Config, error) {
-	var conf Config
-	f, err := os.ReadFile(cfg)
-	if err != nil {
-		return Config{}, err
-	}
-
-	if _, err := toml.Decode(string(f), &conf); err != nil {
-		return Config{}, err
-	}
-	return conf, nil
+func NewCalenderCfg(cfg string) (Config, error) {
+	c := Config{}
+	err := Load(cfg, &c)
+	return c, err
 }
 
-// TODO
+func Load(cfg string, conf interface{}) error {
+	f, err := os.ReadFile(cfg)
+	if err != nil {
+		return err
+	}
+	if err := toml.Unmarshal(f, conf); err != nil {
+		return err
+	}
+	return nil
+}

@@ -1,0 +1,14 @@
+[logger]
+level = "info"
+
+[storage]
+type = "sql"
+dsn = "postgres://admin:pgpswd@localhost:5431/db?sslmode=disable"
+
+[queue]
+type = "rmq"
+dsn = "amqp://guest:guest@localhost:5672"
+queue = "notifications"
+
+[ticker]
+interval = "60s"
