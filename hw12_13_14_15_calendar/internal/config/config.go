@@ -34,8 +34,7 @@ type StorageConf struct {
 
 func NewCalenderCfg(cfg string) (Config, error) {
 	c := Config{}
-	err := Load(cfg, &c)
-	return c, err
+	return c, Load(cfg, &c)
 }
 
 func Load(cfg string, conf interface{}) error {

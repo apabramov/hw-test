@@ -2,18 +2,14 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"flag"
 	"log"
 	"os/signal"
 	"syscall"
 
-	"github.com/streadway/amqp"
-
 	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/app"
 	cfg "github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/config"
 	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/logger"
-	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/queue"
 	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/queue/rabbit"
 	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/util"
 )
@@ -52,50 +48,7 @@ func main() {
 func startSender(ctx context.Context, s *app.Sender, c cfg.QueueConf) {
 	cn := rabbit.NewConsumer(c.Dsn, c.Exchange, c.ExchangeType, c.Queue)
 
-	if err := cn.Handle(ctx, Worker(s), 1); err != nil {
+	if err := cn.Handle(ctx, rabbit.Handler(s), 1); err != nil {
 		s.Log.Info(err.Error())
-	}
-}
-
-// Worker receive message -> send notify
-func Worker(s *app.Sender) rabbit.Worker {
-	return func(ctx context.Context, m <-chan amqp.Delivery) {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			default:
-			}
-			select {
-			case <-ctx.Done():
-				return
-			case mes := <-m:
-				if len(mes.Body) == 0 {
-					continue
-				}
-
-				var n queue.Notification
-				if err := json.Unmarshal(mes.Body, &n); err != nil {
-					s.Log.Info(err.Error())
-					if err := mes.Nack(false, false); err != nil {
-						s.Log.Info(err.Error())
-					}
-					continue
-				}
-
-				if err := s.SendNotify(ctx, n); err != nil {
-					s.Log.Info(err.Error())
-					if err := mes.Nack(false, false); err != nil {
-						s.Log.Info(err.Error())
-					}
-					continue
-				}
-
-				if err := mes.Ack(false); err != nil {
-					s.Log.Info(err.Error())
-					return
-				}
-			}
-		}
 	}
 }

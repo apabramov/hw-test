@@ -94,6 +94,10 @@ func (s *Storage) DeleteOutDate(ctx context.Context, t time.Time) error {
 
 func (s *Storage) ListNotify(ctx context.Context, t time.Time) ([]storage.Event, error) {
 	ev := make([]storage.Event, 0)
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	for _, e := range s.events {
 		if e.Date.Add(e.Duration).After(t) && e.Date.Add(e.Duration).Before(t.Add(time.Second*60)) {
 			ev = append(ev, e)

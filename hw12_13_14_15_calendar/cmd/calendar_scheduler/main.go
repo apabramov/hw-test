@@ -63,15 +63,11 @@ func startScheduler(ctx context.Context, c cfg.SchedulerConfig, s *app.Scheduler
 		select {
 		case <-ctx.Done():
 			return
-		default:
-		}
-		select {
-		case <-ctx.Done():
-			return
 		case <-time.Tick(d):
 			events, err := s.ListNotify(ctx)
 			if err != nil {
 				s.Log.Info(err.Error())
+				continue
 			}
 
 			for _, e := range events {

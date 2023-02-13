@@ -2,12 +2,16 @@ package rabbit
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"time"
 
 	backoff "github.com/cenkalti/backoff/v3"
 	"github.com/streadway/amqp"
+
+	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/app"
+	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/queue"
 )
 
 type Consumer struct {
@@ -31,6 +35,44 @@ func NewConsumer(dsn, ex, exType, queue string) *Consumer {
 }
 
 type Worker func(context.Context, <-chan amqp.Delivery)
+
+// Handler receive message -> send notify
+func Handler(s *app.Sender) Worker {
+	return func(ctx context.Context, m <-chan amqp.Delivery) {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case mes := <-m:
+				if len(mes.Body) == 0 {
+					continue
+				}
+
+				var n queue.Notification
+				if err := json.Unmarshal(mes.Body, &n); err != nil {
+					s.Log.Info(err.Error())
+					if err := mes.Nack(false, false); err != nil {
+						s.Log.Info(err.Error())
+					}
+					continue
+				}
+
+				if err := s.SendNotify(ctx, n); err != nil {
+					s.Log.Info(err.Error())
+					if err := mes.Nack(false, false); err != nil {
+						s.Log.Info(err.Error())
+					}
+					continue
+				}
+
+				if err := mes.Ack(false); err != nil {
+					s.Log.Info(err.Error())
+					return
+				}
+			}
+		}
+	}
+}
 
 func (c *Consumer) Handle(ctx context.Context, fn Worker, threads int) error {
 	var err error
