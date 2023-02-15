@@ -2,19 +2,21 @@ package internalgrpc
 
 import (
 	"context"
+	"log"
+	"net"
+	"testing"
+	"time"
+
+	"github.com/stretchr/testify/require"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/app"
 	cfg "github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/config"
 	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/logger"
 	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/server/pb"
 	memorystorage "github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/storage/memory"
-	"github.com/stretchr/testify/require"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/protobuf/types/known/timestamppb"
-	"log"
-	"net"
-	"testing"
-	"time"
 )
 
 func TestGRPC(t *testing.T) {
@@ -25,7 +27,7 @@ func TestGRPC(t *testing.T) {
 	_, err = grpc.Dial(l.Addr().String(), clientOptions...)
 	require.NoError(t, err)
 
-	logg, err := logger.New("info")
+	logg, err := logger.New("info", "calendar")
 	require.NoError(t, err)
 
 	storage := memorystorage.New()
@@ -47,7 +49,7 @@ func TestGRPC(t *testing.T) {
 }
 
 func TestGRPCServerAdd(t *testing.T) {
-	logg, err := logger.New("info")
+	logg, err := logger.New("info", "calendar")
 	require.NoError(t, err)
 
 	storage := memorystorage.New()
@@ -78,7 +80,7 @@ func TestGRPCServerAdd(t *testing.T) {
 }
 
 func TestGRPCServerUpdate(t *testing.T) {
-	logg, err := logger.New("info")
+	logg, err := logger.New("info", "calendar")
 	require.NoError(t, err)
 
 	storage := memorystorage.New()
@@ -126,7 +128,7 @@ func TestGRPCServerUpdate(t *testing.T) {
 }
 
 func TestGRPCServerDel(t *testing.T) {
-	logg, err := logger.New("info")
+	logg, err := logger.New("info", "calendar")
 	require.NoError(t, err)
 
 	storage := memorystorage.New()
@@ -169,7 +171,7 @@ func TestGRPCServerDel(t *testing.T) {
 }
 
 func TestGRPCServerListByDay(t *testing.T) {
-	logg, err := logger.New("info")
+	logg, err := logger.New("info", "calendar")
 	require.NoError(t, err)
 
 	storage := memorystorage.New()
@@ -218,7 +220,7 @@ func TestGRPCServerListByDay(t *testing.T) {
 }
 
 func TestGRPCServerListByWeek(t *testing.T) {
-	logg, err := logger.New("info")
+	logg, err := logger.New("info", "calendar")
 	require.NoError(t, err)
 
 	storage := memorystorage.New()
@@ -265,7 +267,7 @@ func TestGRPCServerListByWeek(t *testing.T) {
 }
 
 func TestGRPCServerListByMonth(t *testing.T) {
-	logg, err := logger.New("info")
+	logg, err := logger.New("info", "calendar")
 	require.NoError(t, err)
 
 	storage := memorystorage.New()

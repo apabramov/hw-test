@@ -11,7 +11,7 @@ type Logger struct {
 	Log *zap.Logger
 }
 
-func New(level string) (*Logger, error) {
+func New(level, name string) (*Logger, error) {
 	config := zap.NewProductionEncoderConfig()
 	config.EncodeTime = zapcore.ISO8601TimeEncoder
 	en := zapcore.NewJSONEncoder(config)
@@ -24,7 +24,7 @@ func New(level string) (*Logger, error) {
 
 	l := zap.New(core)
 
-	log := l.Named("calendar")
+	log := l.Named(name)
 	return &Logger{log}, err
 }
 

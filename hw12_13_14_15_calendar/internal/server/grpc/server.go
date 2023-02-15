@@ -6,13 +6,14 @@ import (
 	"net"
 	"time"
 
-	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/config"
-	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/server/pb"
-	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/storage"
 	"github.com/google/uuid"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
+
+	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/config"
+	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/server/pb"
+	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/storage"
 )
 
 type Server struct {

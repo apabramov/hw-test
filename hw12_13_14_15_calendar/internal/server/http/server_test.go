@@ -4,19 +4,20 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"google.golang.org/grpc"
 	"net"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
+	"google.golang.org/grpc"
+
 	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/app"
 	cfg "github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/config"
 	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/logger"
 	internalgrpc "github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/server/grpc"
 	memorystorage "github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/storage/memory"
-	"github.com/stretchr/testify/require"
 )
 
 type Event struct {
@@ -61,7 +62,7 @@ func start(t *testing.T, ctx context.Context, cfg *cfg.Config, logg *logger.Logg
 }
 
 func TestHTTPServer(t *testing.T) {
-	logg, err := logger.New("info")
+	logg, err := logger.New("info", "calendar")
 	require.NoError(t, err)
 
 	storage := memorystorage.New()

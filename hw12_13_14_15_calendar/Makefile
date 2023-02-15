@@ -1,4 +1,6 @@
 BIN := "./bin/calendar"
+BIN_SCHEDULER := "./bin/calendar_scheduler"
+BIN_SENDER := "./bin/calendar_sender"
 DOCKER_IMG="calendar:develop"
 
 GIT_HASH := $(shell git log --format="%h" -n 1)
@@ -10,11 +12,25 @@ db:
 migrate:
 	goose --dir=migrations postgres "postgres://admin:pgpswd@localhost:5432/db?sslmode=disable" up
 
-build:
+build-calendar:
 	go build -v -o $(BIN) -ldflags "$(LDFLAGS)" ./cmd/calendar
 
-run: build
+build-scheduler:
+	go build -v -o $(BIN_SCHEDULER) -ldflags "$(LDFLAGS)" ./cmd/calendar_scheduler
+
+build-sender:
+	go build -v -o $(BIN_SENDER) -ldflags "$(LDFLAGS)" ./cmd/calendar_sender
+
+build: build-calendar build-scheduler build-sender
+
+run-calendar: build-calendar
 	$(BIN) -config ./configs/config.toml
+
+run-scheduler: build-scheduler
+	$(BIN_SCHEDULER) -config ./configs/config_scheduler.toml
+
+run-sender: build-sender
+	$(BIN_SENDER) -config ./configs/config_sender.toml
 
 build-img:
 	docker build \

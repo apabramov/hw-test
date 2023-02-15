@@ -29,11 +29,11 @@ func main() {
 		return
 	}
 
-	config, err := cfg.NewConfig(configFile)
+	config, err := cfg.NewCalenderCfg(configFile)
 	if err != nil {
 		log.Fatal(err)
 	}
-	logg, err := logger.New(config.Logger.Level)
+	logg, err := logger.New(config.Logger.Level, "calender")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -41,8 +41,7 @@ func main() {
 	storage := util.NewStorage(logg, config.Storage)
 	calendar := app.New(logg, storage)
 
-	ctx, cancel := signal.NotifyContext(context.Background(),
-		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
+	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	defer cancel()
 
 	logg.Info("calendar is running...")
@@ -52,7 +51,6 @@ func main() {
 func start(ctx context.Context, cfg *cfg.Config, logg *logger.Logger, a *app.App) {
 	g := internalgrpc.NewServer(logg, a, cfg.GrpsServ)
 	h, err := internalhttp.NewServer(ctx, logg, cfg)
-
 	if err != nil {
 		logg.Info(err.Error())
 		return

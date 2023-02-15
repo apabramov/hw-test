@@ -79,3 +79,29 @@ func (s *Storage) ListByWeek(ctx context.Context, bg time.Time, fn time.Time) ([
 func (s *Storage) ListByMonth(ctx context.Context, bg time.Time, fn time.Time) ([]storage.Event, error) {
 	return s.List(ctx, bg, fn)
 }
+
+func (s *Storage) DeleteOutDate(ctx context.Context, t time.Time) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	for i, e := range s.events {
+		if e.Date.Before(t) {
+			delete(s.events, i)
+		}
+	}
+	return nil
+}
+
+func (s *Storage) ListNotify(ctx context.Context, t time.Time) ([]storage.Event, error) {
+	ev := make([]storage.Event, 0)
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	for _, e := range s.events {
+		if e.Date.Add(e.Duration).After(t) && e.Date.Add(e.Duration).Before(t.Add(time.Second*60)) {
+			ev = append(ev, e)
+		}
+	}
+	return ev, nil
+}

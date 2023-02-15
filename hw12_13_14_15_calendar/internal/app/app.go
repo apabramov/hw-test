@@ -23,10 +23,12 @@ type Storage interface {
 	Add(ctx context.Context, event storage.Event) error
 	Update(ctx context.Context, event storage.Event) error
 	Del(ctx context.Context, id string) error
-	Get(ctx context.Context, is string) (storage.Event, error)
+	Get(ctx context.Context, id string) (storage.Event, error)
 	ListByDay(ctx context.Context, bg time.Time, fn time.Time) ([]storage.Event, error)
 	ListByWeek(ctx context.Context, bg time.Time, fn time.Time) ([]storage.Event, error)
 	ListByMonth(ctx context.Context, bg time.Time, fn time.Time) ([]storage.Event, error)
+	ListNotify(ctx context.Context, t time.Time) ([]storage.Event, error)
+	DeleteOutDate(ctx context.Context, t time.Time) error
 
 	Connect(ctx context.Context) error
 }
