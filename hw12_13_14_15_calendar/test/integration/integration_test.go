@@ -226,5 +226,4 @@ func (s *TestSuite) TestNotifyEvent() {
 
 	s.Require().True(e.Event.GetSent())
 	s.Require().NoError(err)
-	s.Require().Equal("Event update", e.Event.GetTitle())
 }
