@@ -8,7 +8,8 @@ CREATE TABLE IF NOT EXISTS events
     duration INTERVAL SECOND(0) NOT NULL,
     description TEXT,
     userid UUID NOT NULL,
-    notify INTERVAL SECOND(0)
+    notify INTERVAL SECOND(0),
+    sent BOOLEAN NOT NULL DEFAULT FALSE,
 );
 -- +goose StatementEnd
 

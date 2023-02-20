@@ -71,7 +71,8 @@ SET
     duration = $4,
     description = $5,
     userid = $6,
-    notify = $7
+    notify = $7,
+    sent = $8
 WHERE
     id = $1`
 
@@ -85,6 +86,7 @@ WHERE
 		event.Description,
 		event.UserId,
 		event.Notify,
+		event.Sent,
 	)
 	return err
 }
@@ -113,6 +115,7 @@ func (s *Storage) Get(ctx context.Context, id string) (storage.Event, error) {
 		Description: ev.Description,
 		UserId:      ev.UserId,
 		Notify:      n,
+		Sent:        ev.Sent,
 	}, err
 }
 
@@ -157,6 +160,7 @@ func convertEvent(events []storage.EventPq) ([]storage.Event, error) {
 			Description: e.Description,
 			UserId:      e.UserId,
 			Notify:      n,
+			Sent:        e.Sent,
 		})
 	}
 	return ev, nil

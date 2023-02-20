@@ -22,6 +22,7 @@ type Event struct {
 	Description string
 	UserId      uuid.UUID
 	Notify      time.Duration
+	Sent        bool
 }
 
 type EventPq struct {
@@ -32,4 +33,5 @@ type EventPq struct {
 	Description string
 	UserId      uuid.UUID
 	Notify      pqinterval.Interval
+	Sent        bool
 }

@@ -1,0 +1,15 @@
+version: "3.9"
+
+services:
+  integration_tests:
+    build:
+      context: ../
+      dockerfile: build/integration/Dockerfile
+    environment:
+      - GRPC_URL=calendar:12000
+    networks:
+      - calendar-network
+
+networks:
+  calendar-network:
+    driver: bridge

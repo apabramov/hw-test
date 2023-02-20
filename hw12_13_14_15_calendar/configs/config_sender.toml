@@ -3,11 +3,11 @@ level = "info"
 
 [storage]
 type = "sql"
-dsn = "postgres://admin:pgpswd@localhost:5431/db?sslmode=disable"
+dsn = "postgres://admin:pgpswd@postgres:5431/db?sslmode=disable"
 
 [queue]
 type = "rmq"
-dsn = "amqp://guest:guest@localhost:5672"
+dsn = "amqp://guest:guest@rabbit:5672"
 exchange = "calendar"
-exchangeType = "direct"
+exchangeType = "fanout"
 queue = "notifications"

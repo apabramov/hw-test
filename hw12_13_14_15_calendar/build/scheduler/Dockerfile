@@ -1,7 +1,7 @@
 # Собираем в гошке
-FROM golang:1.16.2 as build
+FROM golang:1.17-alpine as build
 
-ENV BIN_FILE /opt/calendar/calendar-app
+ENV BIN_FILE /opt/scheduler/scheduler-app
 ENV CODE_DIR /go/src/
 
 WORKDIR ${CODE_DIR}
@@ -11,26 +11,31 @@ COPY go.mod .
 COPY go.sum .
 RUN go mod download
 
-COPY . ${CODE_DIR}
+COPY .. ${CODE_DIR}
 
 # Собираем статический бинарник Go (без зависимостей на Си API),
 # иначе он не будет работать в alpine образе.
 ARG LDFLAGS
 RUN CGO_ENABLED=0 go build \
         -ldflags "$LDFLAGS" \
-        -o ${BIN_FILE} cmd/calendar/*
+        -o ${BIN_FILE} cmd/calendar_scheduler/*
 
 # На выходе тонкий образ
 FROM alpine:3.9
 
-LABEL ORGANIZATION="OTUS Online Education"
-LABEL SERVICE="calendar"
-LABEL MAINTAINERS="student@otus.ru"
+RUN apk add --no-cache bash
 
-ENV BIN_FILE "/opt/calendar/calendar-app"
+LABEL ORGANIZATION="OTUS Online Education"
+LABEL SERVICE="scheduler"
+LABEL MAINTAINERS="apabramov@rolf.ru"
+
+ENV BIN_FILE "/opt/scheduler/scheduler-app"
 COPY --from=build ${BIN_FILE} ${BIN_FILE}
 
-ENV CONFIG_FILE /etc/calendar/config.toml
-COPY ./configs/config.toml ${CONFIG_FILE}
+ENV CONFIG_FILE /etc/scheduler/config_scheduler.toml
+COPY ./configs/config_scheduler.toml ${CONFIG_FILE}
+
+COPY ./wait-for-it.sh ./
+RUN chmod +x wait-for-it.sh
 
 CMD ${BIN_FILE} -config ${CONFIG_FILE}
