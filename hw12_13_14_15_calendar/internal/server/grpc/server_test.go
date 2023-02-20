@@ -179,8 +179,8 @@ func TestGRPCServerListByDay(t *testing.T) {
 
 	cfg := cfg.Config{
 		GrpsServ: cfg.GrpcServerConf{
-			Host: "",
-			Port: "50056",
+			Host: "0.0.0.0",
+			Port: "50051",
 		},
 	}
 
