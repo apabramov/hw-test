@@ -170,6 +170,7 @@ func (*Server) getStorageEvent(event *pb.Event) (storage.Event, error) {
 		Description: event.GetDescription(),
 		UserId:      userID,
 		Notify:      event.GetNotify().AsDuration(),
+		Sent:        event.GetSent(),
 	}, nil
 }
 

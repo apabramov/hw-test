@@ -3,6 +3,7 @@ package integration_test
 
 import (
 	"context"
+	"google.golang.org/protobuf/types/known/durationpb"
 	"os"
 	"testing"
 	"time"
@@ -39,11 +40,18 @@ func (s *TestSuite) SetupSuite() {
 }
 
 func (s *TestSuite) TestAddEvent() {
-	_, err := s.client.Add(context.Background(), &pb.EventRequest{
+	ctx := context.Background()
+	id := faker.UUIDHyphenated()
+	_, err := s.client.Add(ctx, &pb.EventRequest{
 		Event: &pb.Event{
-			ID:     faker.UUIDHyphenated(),
+			ID:     id,
 			UserId: faker.UUIDHyphenated(),
 		},
+	})
+	s.Require().NoError(err)
+
+	_, err = s.client.Del(ctx, &pb.IDRequest{
+		ID: id,
 	})
 	s.Require().NoError(err)
 }
@@ -74,6 +82,11 @@ func (s *TestSuite) TestUpdateEvent() {
 	e, err := s.client.Get(ctx, &pb.IDRequest{ID: id})
 	s.Require().NoError(err)
 	s.Require().Equal("Event update", e.Event.GetTitle())
+
+	_, err = s.client.Del(ctx, &pb.IDRequest{
+		ID: id,
+	})
+	s.Require().NoError(err)
 }
 
 func (s *TestSuite) TestDeleteEvent() {
@@ -190,4 +203,28 @@ func (s *TestSuite) TestListMonthEvent() {
 		ID: id,
 	})
 	s.Require().NoError(err)
+}
+
+func (s *TestSuite) TestNotifyEvent() {
+	id := faker.UUIDHyphenated()
+	userId := faker.UUIDHyphenated()
+	ctx := context.Background()
+	dt := time.Now()
+
+	_, err := s.client.Add(ctx, &pb.EventRequest{
+		Event: &pb.Event{
+			ID:     id,
+			UserId: userId,
+			Title:  "Event add",
+			Date:   timestamppb.New(dt.Add(time.Second * 60)),
+			Notify: durationpb.New(time.Second * 55),
+		},
+	})
+	s.Require().NoError(err)
+	time.Sleep(time.Second * 60)
+	e, err := s.client.Get(ctx, &pb.IDRequest{ID: id})
+
+	s.Require().True(e.Event.GetSent())
+	s.Require().NoError(err)
+	s.Require().Equal("Event update", e.Event.GetTitle())
 }

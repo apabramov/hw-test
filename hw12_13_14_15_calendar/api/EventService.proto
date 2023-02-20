@@ -61,6 +61,7 @@ message Event {
   string Description = 5;
   string UserId = 6;
   google.protobuf.Duration Notify = 7;
+  bool Sent = 8;
 }
 
 message EventRequest {

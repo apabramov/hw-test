@@ -262,6 +262,9 @@
         },
         "Notify": {
           "type": "string"
+        },
+        "Sent": {
+          "type": "boolean"
         }
       }
     },
