@@ -1,16 +1,19 @@
+// nolint
 package integration_test
 
 import (
 	"context"
-	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/server/pb"
+	"os"
+	"testing"
+	"time"
+
 	faker "github.com/bxcodec/faker/v3"
 	"github.com/stretchr/testify/suite"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	"os"
-	"testing"
-	"time"
+
+	"github.com/apabramov/hw-test/hw12_13_14_15_calendar/internal/server/pb"
 )
 
 type TestSuite struct {
