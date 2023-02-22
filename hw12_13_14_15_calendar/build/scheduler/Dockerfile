@@ -35,7 +35,4 @@ COPY --from=build ${BIN_FILE} ${BIN_FILE}
 ENV CONFIG_FILE /etc/scheduler/config_scheduler.toml
 COPY ./configs/config_scheduler.toml ${CONFIG_FILE}
 
-COPY ./wait-for-it.sh ./
-RUN chmod +x wait-for-it.sh
-
 CMD ${BIN_FILE} -config ${CONFIG_FILE}

@@ -11,4 +11,4 @@ port = "12000"
 
 [storage]
 type = "memory"
-dsn = "postgres://admin:pgpswd@postgres:5431/db?sslmode=disable"
+dsn = "postgres://admin:pgpswd@postgres:5432/db?sslmode=disable"

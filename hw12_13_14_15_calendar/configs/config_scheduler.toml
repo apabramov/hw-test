@@ -3,7 +3,7 @@ level = "info"
 
 [storage]
 type = "sql"
-dsn = "postgres://admin:pgpswd@postgres:5431/db?sslmode=disable"
+dsn = "postgres://admin:pgpswd@postgres:5432/db?sslmode=disable"
 
 [queue]
 type = "rmq"
@@ -11,4 +11,4 @@ dsn = "amqp://guest:guest@rabbit:5672"
 queue = "notifications"
 
 [ticker]
-interval = "60s"
+duration = "60s"

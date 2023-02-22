@@ -32,6 +32,15 @@ run-scheduler: build-scheduler
 run-sender: build-sender
 	$(BIN_SENDER) -config ./configs/config_sender.toml
 
+run_rabbitmq:
+	docker run -d --rm --hostname rabbitmq --name rabbitmq -e RABBITMQ_DEFAULT_USER=guest -e RABBITMQ_DEFAULT_PASS=guest -p 15672:15672 -p 5672:5672 rabbitmq:3.11-management
+
+run_postgres:
+	docker run -d --rm --hostname postgres --network calendar --name postgres -e POSTGRES_USER=admin -e POSTGRES_PASSWORD=pgpswd -e PGDATA=/var/lib/postgresql/data/pgdata -v psqldata:/var/lib/postgresql/data -p 5432:5432 postgres
+
+create_db:
+	docker exec -it postgres createdb --username=admin --owner=root db
+
 build-img:
 	docker build \
 		--build-arg=LDFLAGS="$(LDFLAGS)" \

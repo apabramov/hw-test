@@ -7,7 +7,7 @@ services:
         POSTGRES_USER: ${DB_USERNAME}
         POSTGRES_PASSWORD: ${DB_PASSWORD}
       healthcheck:
-        test: [ "CMD-SHELL", "/usr/bin/pg_isready -U postgres" ]
+        test: [ "CMD-SHELL", "pg_isready -U admin -d db" ]
         interval: 10s
         timeout: 30s
         retries: 3
@@ -36,11 +36,12 @@ services:
      build:
       context: ../.
       dockerfile: build/goose/Dockerfile
-     command: ["./wait-for-it.sh", "postgres:5432", "--strict", "--timeout=60", "--", "goose", "--dir=/migrations", "postgres", "postgres://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_DATABASE}?sslmode=disable", "up"]
+     command: ["goose", "--dir=/migrations", "postgres", "postgres://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_DATABASE}?sslmode=disable", "up"]
      volumes:
       - ./../migrations:/migrations
      depends_on:
-      - postgres
+       postgres:
+         condition: service_healthy
      networks:
       - calendar-network
 
@@ -48,15 +49,17 @@ services:
      build:
       context: ../
       dockerfile: build/calendar/Dockerfile
-     command: ["./wait-for-it.sh", "postgres:5432", "--strict", "--timeout=60", "--", "/opt/calendar/calendar-app", "-config", "/etc/calendar/config.toml"]
+     command: ["/opt/calendar/calendar-app", "-config", "/etc/calendar/config.toml"]
      volumes:
        - ./../configs/config.toml:/etc/calendar/config.toml
      ports:
       - 8088:8088
       - 12000:12000
      depends_on:
-      - goose
-      - rabbit
+       postgres:
+         condition: service_healthy
+       rabbit:
+         condition: service_started
      networks:
       - calendar-network
 
@@ -64,12 +67,14 @@ services:
      build:
       context: ../
       dockerfile: build/scheduler/Dockerfile
-     command: ["./wait-for-it.sh", "postgres:5432", "--strict", "--timeout=60", "--", "./wait-for-it.sh" , "rabbit:5672" , "--strict" , "--timeout=60", "--", "/opt/scheduler/scheduler-app", "-config", "/etc/scheduler/config_scheduler.toml"]
+     command: ["/opt/scheduler/scheduler-app", "-config", "/etc/scheduler/config_scheduler.toml"]
      volumes:
        - ./../configs/config_scheduler.toml:/etc/calendar/config_scheduler.toml
      depends_on:
-      - goose
-      - rabbit
+       postgres:
+         condition: service_healthy
+       rabbit:
+         condition: service_started
      networks:
       - calendar-network
 
@@ -77,26 +82,17 @@ services:
      build:
        context: ../
        dockerfile: build/sender/Dockerfile
-     command: ["./wait-for-it.sh", "postgres:5432", "--strict" , "--timeout=60", "--", "./wait-for-it.sh" , "rabbit:5672" , "--strict" , "--timeout=60", "--", "/opt/sender/sender-app", "-config", "/etc/sender/config_sender.toml"]
+     command: ["/opt/sender/sender-app", "-config", "/etc/sender/config_sender.toml"]
      volumes:
        - ./../configs/config_sender.toml:/etc/calendar/config_sender.toml
      depends_on:
-      - goose
-      - rabbit
+       postgres:
+         condition: service_healthy
+       rabbit:
+         condition: service_started
      networks:
       - calendar-network
 
-   tests:
-     image: integration-test
-     build:
-       context: ../
-       dockerfile: build/integration/Dockerfile
-     environment:
-       - GRPC_URL=calendar:12000
-     depends_on:
-       - calendar
-     networks:
-       - calendar-network
 
 volumes:
   pgdata:

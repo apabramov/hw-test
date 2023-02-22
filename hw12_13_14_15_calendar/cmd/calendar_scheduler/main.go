@@ -42,8 +42,8 @@ func main() {
 
 	scheduler := app.NewScheduler(logg, storage)
 
-	go startScheduler(ctx, cfg.SchedulerConfig{}, scheduler)
-	go startDelete(ctx, cfg.SchedulerConfig{}, scheduler)
+	go startScheduler(ctx, config, scheduler)
+	go startDelete(ctx, config, scheduler)
 
 	logg.Info("scheduler is running...")
 
