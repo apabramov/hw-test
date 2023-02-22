@@ -32,6 +32,15 @@ run-scheduler: build-scheduler
 run-sender: build-sender
 	$(BIN_SENDER) -config ./configs/config_sender.toml
 
+run_rabbitmq:
+	docker run -d --rm --hostname rabbitmq --name rabbitmq -e RABBITMQ_DEFAULT_USER=guest -e RABBITMQ_DEFAULT_PASS=guest -p 15672:15672 -p 5672:5672 rabbitmq:3.11-management
+
+run_postgres:
+	docker run -d --rm --hostname postgres --network calendar --name postgres -e POSTGRES_USER=admin -e POSTGRES_PASSWORD=pgpswd -e PGDATA=/var/lib/postgresql/data/pgdata -v psqldata:/var/lib/postgresql/data -p 5432:5432 postgres
+
+create_db:
+	docker exec -it postgres createdb --username=admin --owner=root db
+
 build-img:
 	docker build \
 		--build-arg=LDFLAGS="$(LDFLAGS)" \
@@ -47,6 +56,15 @@ version: build
 test:
 	go test -race ./internal/...
 
+integration-tests:
+		set -e; \
+    	docker-compose -f deployments/docker-compose.yaml -f deployments/docker-compose.test.yaml up -d; \
+    	e=0; \
+    	docker-compose -f deployments/docker-compose.test.yaml run integration_tests || e=$$?; \
+    	docker-compose -f deployments/docker-compose.yaml -f deployments/docker-compose.test.yaml down -v --remove-orphans; \
+    	echo $$e; \
+    	exit $$e
+
 install-lint-deps:
 	(which golangci-lint > /dev/null) || curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.41.1
 
@@ -56,4 +74,10 @@ lint: install-lint-deps
 generate:
 	go generate ./...
 
-.PHONY: build run build-img run-img version test lint
+up:
+	docker-compose -f deployments/docker-compose.yaml -p calendar up
+
+down:
+	docker-compose -f deployments/docker-compose.yaml -p calendar down --rmi local
+
+.PHONY: build run build-img run-img version test lint integration-tests

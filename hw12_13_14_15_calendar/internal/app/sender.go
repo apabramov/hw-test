@@ -20,6 +20,14 @@ func NewSender(logger Logger, storage Storage) *Sender {
 }
 
 func (a *Sender) SendNotify(ctx context.Context, n queue.Notification) error {
-	a.Log.Info(fmt.Sprintf("ID: %v Title: %v Date: %v, UserId: %v", n.GetId(), n.GetTitle(), n.GetDate(), n.GetUserId()))
+	e, err := a.Store.Get(ctx, n.GetId())
+	if err != nil {
+		return err
+	}
+	if !e.Sent {
+		e.Sent = true
+		a.Store.Update(ctx, e)
+		a.Log.Info(fmt.Sprintf("ID: %v Title: %v Date: %v, UserId: %v", n.GetId(), n.GetTitle(), n.GetDate(), n.GetUserId()))
+	}
 	return nil
 }

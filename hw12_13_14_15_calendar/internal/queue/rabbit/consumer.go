@@ -43,7 +43,11 @@ func Handler(s *app.Sender) Worker {
 			select {
 			case <-ctx.Done():
 				return
-			case mes := <-m:
+			case mes, ok := <-m:
+				s.Log.Info("Delivery message")
+				if !ok {
+					s.Log.Info("Delivery err")
+				}
 				if len(mes.Body) == 0 {
 					continue
 				}

@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/BurntSushi/toml v1.2.1
+	github.com/bxcodec/faker/v3 v3.8.1
 	github.com/cenkalti/backoff/v3 v3.2.2
 	github.com/golang/protobuf v1.5.2
 	github.com/google/uuid v1.3.0
